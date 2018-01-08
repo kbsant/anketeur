@@ -9,6 +9,7 @@
                  [compojure "1.6.0"]
                  [conman "0.7.4"]
                  [cprop "0.1.11"]
+                 [crypto-password "0.2.0"]
                  [funcool/struct "1.1.0"]
                  [luminus-immutant "0.2.4"]
                  [luminus-migrations "0.4.4"]

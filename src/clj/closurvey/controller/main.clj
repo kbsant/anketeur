@@ -4,4 +4,4 @@
     [closurvey.view.main :as view.main]))
 
 (defn render []
-  (layout/render-hiccup view.main/render {:glossary {:title "Closurvey"}}))
+  (layout/render-hiccup view.main/render {:glossary {:title "Survey"}}))

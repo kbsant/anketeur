@@ -11,3 +11,4 @@ profiles.clj
 /.env
 .nrepl-port
 /log
+dev_env.sh

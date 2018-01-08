@@ -3,7 +3,7 @@
 
 (defn home-page []
   [:div.container
-    [:h1 "Closurvey Editor"]
+    [:h1 "Survey Editor"]
     [:ul
       [:li "Add a survey"]
       [:li "Edit a survey"]]])

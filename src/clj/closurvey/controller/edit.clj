@@ -4,4 +4,4 @@
     [closurvey.view.edit :as view.edit]))
 
 (defn render []
-  (layout/render-hiccup view.edit/render {:glossary {:title "Closurvey Editor"}}))
+  (layout/render-hiccup view.edit/render {:glossary {:title "Survey Editor"}}))
