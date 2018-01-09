@@ -34,8 +34,7 @@
       [:title (glossary :title)]
       (page/include-css 
          "/assets/bootstrap/css/bootstrap.min.css"
-         "/assets/font-awesome/css/font-awesome.min.css" 
-         "/css/main.css")
+         "/assets/font-awesome/css/font-awesome.min.css") 
       (page/include-js
          "/assets/jquery/jquery.min.js"
          "/assets/bootstrap/js/bootstrap.min.js") 
