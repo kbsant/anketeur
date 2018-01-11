@@ -1,16 +1,21 @@
 (ns closurvey.core
   (:require
+    [clojure.string :as string]
     [closurvey.client.event :as event] 
     [reagent.core :as r]
     [ajax.core :refer [GET POST]]))
 
+(def empty-question
+  {:current-question ""
+   :current-required false
+   :current-allow-na false})
+
 (defonce state 
   (r/atom
-    {:surveyname ""
-     :current-question ""
-     :current-required false
-     :current-allow-na false
-     :questions []})) 
+    (merge 
+      empty-question
+      {:surveyname ""
+       :questions []}))) 
 
 (defn open-or-edit-selector [state]
   (fn []
@@ -27,6 +32,13 @@
                  :value "Open existing"}]]
       [:div.row 
         [:span "Properties..."]]]))          
+
+(defn build-current-question 
+  [{:keys [current-question current-required current-allow-na]}]
+  (when-not (string/blank? current-question)
+    {:question current-question
+     :allow-na current-allow-na
+     :required current-required}))
   
 (defn question-adder [state]
   (fn []
@@ -51,7 +63,10 @@
                    :on-click (event/update-with-js-value state :current-allow-na not)}]
           "Provide Not Applicable"]
         [:input {:type :button
-                 :value "Add"}]]]))
+                 :value "Add"
+                 :on-click #(when-let [q (build-current-question @state)]
+                              (swap! state update :questions conj q)
+                              (swap! state merge empty-question))}]]]))
 
 (defn answer-customizer [state]
   (fn []
@@ -61,13 +76,13 @@
   (fn []
     (let [questions (:questions @state)]
       (when-not (empty? questions)
+       [:div.container 
         (->> questions
              (map-indexed
                 (fn [i q]
                   ^{:key i}
                   [:div.row
-                    [:p (:question q)]])))))))
-
+                    [:p (:question q)]])))]))))
 
 (defn home-page []
   [:div.container
@@ -96,7 +111,7 @@
           [:li "Custom: Zero or more of the given values, in a given order or rank"]]]]
     [question-list state]
     [:ul
-      [:li "Question list"
+      [:li (str "Question list (" (count (:questions @state)) ")")
         [:ul
           [:li "Allow move up/down"]
           [:li "Allow cut / copy / paste / delete"]]]]])
