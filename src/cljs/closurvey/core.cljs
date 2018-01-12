@@ -6,7 +6,8 @@
     [ajax.core :refer [GET POST]]))
 
 (def empty-question
-  {:current-question ""
+  {:current-question-text ""
+   :current-answer-type "yes-no"
    :current-required false
    :current-allow-na false})
 
@@ -34,9 +35,9 @@
         [:span "Properties..."]]]))          
 
 (defn build-current-question 
-  [{:keys [current-question current-answer-type current-required current-allow-na]}]
-  (when-not (string/blank? current-question)
-    {:question current-question
+  [{:keys [current-question-text current-answer-type current-required current-allow-na]}]
+  (when-not (string/blank? current-question-text)
+    {:question-text current-question-text
      :answer-type current-answer-type
      :allow-na current-allow-na
      :required current-required}))
@@ -47,10 +48,16 @@
       [:div.row  [:span.font-weight-bold "Add a question"]]
       [:div.row
         [:input {:type :text 
-                 :value (:current-question @state) 
+                 :value (:current-question-text @state) 
                  :placeholder "Question"
-                 :on-change (event/assoc-with-js-value state :current-question)}]
-        [:select]
+                 :on-change (event/assoc-with-js-value state :current-question-text)}]
+        [:select {:on-change (event/assoc-with-js-value state :current-answer-type)}
+          [:option {:value "yes-no"
+                    :checked true}
+                   "Yes / No"]
+          [:option {:value "disagree-agree-5-levels"}
+                   "Disagree ... Agree (5 levels)"]]
+
         [:label
           [:input {:type :checkbox 
                    :checked (:current-required @state)
@@ -73,10 +80,31 @@
   (fn []
       [:div.container]))
 
-(defn render-question [index {:keys [question required allow-na]}]
+(def answer-types
+  {"yes-no"
+    (fn [index _]
+      [:form.inline
+        [:label.mr-1
+          [:input.mr-1 {:type :radio :name (str index) :value "yes"}]
+          "Yes"] 
+        [:label.mr-1
+          [:input.mr-1 {:type :radio :name (str index) :value "no"}]
+          "No"]]) 
+    "disagree-agree-5-levels"
+      (fn [& _ ] "wip disagree .. agree")})
+
+(defn render-question 
+  [index {:keys [question-text answer-type required allow-na] :as question}]
   ^{:key index}
   [:div.row
-    [:p question (when required [:span.alert.alert-info.ml-1.pl-1 "* Required"])]])
+    (list
+      [:p
+        [:span.mr-1.font-weight-bold (str (inc index))] 
+        question-text 
+        (when required [:span.alert.alert-info.ml-1.pl-1 "* Required"])]
+      (when-let [answer-renderer (get answer-types answer-type)]
+        (answer-renderer index question))
+      (when allow-na "Allow n/a"))]) 
        
 (defn question-list [state]
   (fn []
