@@ -20,7 +20,7 @@
 (defn open-or-edit-selector [state]
   (fn []
     [:div.container
-      [:div.row [:span.badge.badge-info "Create or edit a survey"]]
+      [:div.row [:span.font-weight-bold "Create or edit a survey"]]
       [:div.row
         [:input {:type :text 
                  :value (:surveyname @state) 
@@ -34,16 +34,17 @@
         [:span "Properties..."]]]))          
 
 (defn build-current-question 
-  [{:keys [current-question current-required current-allow-na]}]
+  [{:keys [current-question current-answer-type current-required current-allow-na]}]
   (when-not (string/blank? current-question)
     {:question current-question
+     :answer-type current-answer-type
      :allow-na current-allow-na
      :required current-required}))
   
 (defn question-adder [state]
   (fn []
     [:div.container
-      [:div.row [:span.badge.badge-info "Add a question"]]
+      [:div.row  [:span.font-weight-bold "Add a question"]]
       [:div.row
         [:input {:type :text 
                  :value (:current-question @state) 
@@ -71,18 +72,18 @@
 (defn answer-customizer [state]
   (fn []
       [:div.container]))
+
+(defn render-question [index {:keys [question required allow-na]}]
+  ^{:key index}
+  [:div.row
+    [:p question (when required [:span.alert.alert-info.ml-1.pl-1 "* Required"])]])
        
 (defn question-list [state]
   (fn []
     (let [questions (:questions @state)]
       (when-not (empty? questions)
-       [:div.container 
-        (->> questions
-             (map-indexed
-                (fn [i q]
-                  ^{:key i}
-                  [:div.row
-                    [:p (:question q)]])))]))))
+        [:div.container 
+          (map-indexed render-question questions)]))))
 
 (defn home-page []
   [:div.container
