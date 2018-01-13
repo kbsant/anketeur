@@ -82,17 +82,41 @@
 
 (def answer-types
   {"yes-no"
-    (fn [index _]
+    (fn [index {:keys [allow-na]}]
       [:form.inline
         [:label.mr-1
           [:input.mr-1 {:type :radio :name (str index) :value "yes"}]
           "Yes"] 
         [:label.mr-1
           [:input.mr-1 {:type :radio :name (str index) :value "no"}]
-          "No"]]) 
+          "No"] 
+        (when allow-na 
+           [:label.mr-1
+             [:input.mr-1 {:type :radio :name (str index) :value "Not applicable"}]
+             "Not applicable"])])
     "disagree-agree-5-levels"
-      (fn [& _ ] "wip disagree .. agree")})
-
+      (fn [index {:keys [allow-na]}]
+        [:form.inline
+          [:label.mr-1
+            [:input.mr-1 {:type :radio :name (str index) :value "strongly-disagree"}]
+            "Strongly disagree"] 
+          [:label.mr-1
+            [:input.mr-1 {:type :radio :name (str index) :value "disagree"}]
+            "Strongly disagree"] 
+          [:label.mr-1
+            [:input.mr-1 {:type :radio :name (str index) :value "neither-agree-nor-disagree"}]
+            "Neither agree nor disagree"] 
+          [:label.mr-1
+            [:input.mr-1 {:type :radio :name (str index) :value "agree"}]
+            "Agree"] 
+          [:label.mr-1
+            [:input.mr-1 {:type :radio :name (str index) :value "strongly-agree"}]
+            "Strongly agree"]
+          (when allow-na 
+            [:label.mr-1
+              [:input.mr-1 {:type :radio :name (str index) :value "Not applicable"}]
+              "Not applicable"])])})
+ 
 (defn render-question 
   [index {:keys [question-text answer-type required allow-na] :as question}]
   ^{:key index}
