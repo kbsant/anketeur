@@ -41,7 +41,7 @@
      :answer-type current-answer-type
      :allow-na current-allow-na
      :required current-required}))
-  
+
 (defn question-adder [state]
   (fn []
     [:div.container
@@ -51,12 +51,11 @@
                  :value (:current-question-text @state) 
                  :placeholder "Question"
                  :on-change (event/assoc-with-js-value state :current-question-text)}]
-        [:select {:on-change (event/assoc-with-js-value state :current-answer-type)}
-          [:option {:value "yes-no"
-                    :checked true}
-                   "Yes / No"]
-          [:option {:value "disagree-agree-5-levels"}
-                   "Disagree ... Agree (5 levels)"]]
+        [:select {:value (:current-answer-type @state)
+                  :on-change (event/assoc-with-js-value state :current-answer-type)}
+          [:option {:value "yes-no"} "Yes / No"]
+          [:option {:value "disagree-agree-5-levels"} "Disagree ... Agree (5 levels)"]
+          [:option {:value "text-area"} "Free text"]]
 
         [:label
           [:input {:type :checkbox 
@@ -80,55 +79,61 @@
   (fn []
       [:div.container]))
 
+(defn render-answer-yes-no [index {:keys [allow-na]}]
+  [:form.inline
+    [:label.mr-1
+      [:input.mr-1 {:type :radio :name (str index) :value "yes"}]
+      "Yes"] 
+    [:label.mr-1
+      [:input.mr-1 {:type :radio :name (str index) :value "no"}]
+      "No"] 
+    (when allow-na 
+       [:label.mr-1
+         [:input.mr-1 {:type :radio :name (str index) :value "Not applicable"}]
+         "Not applicable"])])
+
+(defn render-answer-agree-disagree-5-levels [index {:keys [allow-na]}]
+  [:form.inline
+    [:label.mr-1
+      [:input.mr-1 {:type :radio :name (str index) :value "strongly-disagree"}]
+      "Strongly disagree"] 
+    [:label.mr-1
+      [:input.mr-1 {:type :radio :name (str index) :value "disagree"}]
+      "Strongly disagree"] 
+    [:label.mr-1
+      [:input.mr-1 {:type :radio :name (str index) :value "neither-agree-nor-disagree"}]
+      "Neither agree nor disagree"] 
+    [:label.mr-1
+      [:input.mr-1 {:type :radio :name (str index) :value "agree"}]
+      "Agree"] 
+    [:label.mr-1
+      [:input.mr-1 {:type :radio :name (str index) :value "strongly-agree"}]
+      "Strongly agree"]
+    (when allow-na 
+      [:label.mr-1
+        [:input.mr-1 {:type :radio :name (str index) :value "Not applicable"}]
+        "Not applicable"])])
+
+(defn render-answer-text-area [_ _]
+  [:form.inline
+    [:textarea]])
+
 (def answer-types
-  {"yes-no"
-    (fn [index {:keys [allow-na]}]
-      [:form.inline
-        [:label.mr-1
-          [:input.mr-1 {:type :radio :name (str index) :value "yes"}]
-          "Yes"] 
-        [:label.mr-1
-          [:input.mr-1 {:type :radio :name (str index) :value "no"}]
-          "No"] 
-        (when allow-na 
-           [:label.mr-1
-             [:input.mr-1 {:type :radio :name (str index) :value "Not applicable"}]
-             "Not applicable"])])
-    "disagree-agree-5-levels"
-      (fn [index {:keys [allow-na]}]
-        [:form.inline
-          [:label.mr-1
-            [:input.mr-1 {:type :radio :name (str index) :value "strongly-disagree"}]
-            "Strongly disagree"] 
-          [:label.mr-1
-            [:input.mr-1 {:type :radio :name (str index) :value "disagree"}]
-            "Strongly disagree"] 
-          [:label.mr-1
-            [:input.mr-1 {:type :radio :name (str index) :value "neither-agree-nor-disagree"}]
-            "Neither agree nor disagree"] 
-          [:label.mr-1
-            [:input.mr-1 {:type :radio :name (str index) :value "agree"}]
-            "Agree"] 
-          [:label.mr-1
-            [:input.mr-1 {:type :radio :name (str index) :value "strongly-agree"}]
-            "Strongly agree"]
-          (when allow-na 
-            [:label.mr-1
-              [:input.mr-1 {:type :radio :name (str index) :value "Not applicable"}]
-              "Not applicable"])])})
- 
+  {"yes-no" render-answer-yes-no
+   "disagree-agree-5-levels" render-answer-agree-disagree-5-levels
+   "text-area" render-answer-text-area})
+
 (defn render-question 
   [index {:keys [question-text answer-type required allow-na] :as question}]
   ^{:key index}
   [:div.row
-    (list
       [:p
         [:span.mr-1.font-weight-bold (str (inc index))] 
         question-text 
         (when required [:span.alert.alert-info.ml-1.pl-1 "* Required"])]
       (when-let [answer-renderer (get answer-types answer-type)]
         (answer-renderer index question))
-      (when allow-na "Allow n/a"))]) 
+      (when allow-na "Allow n/a")]) 
        
 (defn question-list [state]
   (fn []
@@ -171,10 +176,10 @@
           
 
 
-(defn open-doc [surveyname passphrase] 
+(defn open-doc [surveyname] 
   (POST "/survey/doc" 
         {:params 
-         {:surveyname surveyname :passphrase passphrase} 
+         {:surveyname surveyname} 
          :handler 
          #(js/alert %)}))
 ;; -------------------------
