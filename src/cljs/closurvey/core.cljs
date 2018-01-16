@@ -5,36 +5,55 @@
     [reagent.core :as r]
     [ajax.core :refer [GET POST]]))
 
+(def yes-no-option
+  {:option-text "Yes / No"
+   :index 0
+   :template :yes-no})
+
+(def agree-disagree-5-levels-option
+  {:option-text "Disagree ... Agree (5 levels)"
+   :index 1
+   :template :agree-disagree-5-levels})
+
+(def text-area-option
+  {:option-text "Free text"
+   :index 2
+   :template :text-area})
+
 (def empty-question
   {:current-question-text ""
-   :current-answer-type "yes-no"
+   :current-answer-type (:option-text yes-no-option)
    :current-required false
    :current-allow-na false})
 
-(defonce state 
+(defonce state
   (r/atom
-    (merge 
+    (merge
       empty-question
       {:surveyname ""
-       :questions []}))) 
+       :questions []
+       :answer-types
+        {(:option-text yes-no-option) yes-no-option
+         (:option-text agree-disagree-5-levels-option) agree-disagree-5-levels-option
+         (:option-text text-area-option) text-area-option}})))
 
 (defn open-or-edit-selector [state]
   (fn []
     [:div.container
       [:div.row [:span.font-weight-bold "Create or edit a survey"]]
       [:div.row
-        [:input {:type :text 
-                 :value (:surveyname @state) 
+        [:input {:type :text
+                 :value (:surveyname @state)
                  :placeholder "Survey name"
                  :on-change (event/assoc-with-js-value state :surveyname)}]
-        [:input {:type :button 
-                 :value "Create new"}]          
-        [:input {:type :button 
+        [:input {:type :button
+                 :value "Create new"}]
+        [:input {:type :button
                  :value "Open existing"}]]
       [:div.row 
-        [:span "Properties..."]]]))          
+        [:span "Properties..."]]]))
 
-(defn build-current-question 
+(defn build-current-question
   [{:keys [current-question-text current-answer-type current-required current-allow-na]}]
   (when-not (string/blank? current-question-text)
     {:question-text current-question-text
@@ -42,21 +61,30 @@
      :allow-na current-allow-na
      :required current-required}))
 
+(defn render-select-options
+  "Given a map of answer types, render a list of options
+  by taking the values sorted by index."
+  [answer-types]
+  (->> answer-types
+       vals
+       (sort (comp < :index))
+       (map-indexed
+          (fn [i {:keys [option-text]}]
+            ^{:key i}
+            [:option option-text]))))
+
 (defn question-adder [state]
   (fn []
     [:div.container
       [:div.row  [:span.font-weight-bold "Add a question"]]
       [:div.row
         [:input {:type :text 
-                 :value (:current-question-text @state) 
+                 :value (:current-question-text @state)
                  :placeholder "Question"
                  :on-change (event/assoc-with-js-value state :current-question-text)}]
         [:select {:value (:current-answer-type @state)
                   :on-change (event/assoc-with-js-value state :current-answer-type)}
-          [:option {:value "yes-no"} "Yes / No"]
-          [:option {:value "disagree-agree-5-levels"} "Disagree ... Agree (5 levels)"]
-          [:option {:value "text-area"} "Free text"]]
-
+          (render-select-options (:answer-types @state))]
         [:label
           [:input {:type :checkbox 
                    :checked (:current-required @state)
@@ -118,29 +146,37 @@
   [:form.inline
     [:textarea]])
 
-(def answer-types
-  {"yes-no" render-answer-yes-no
-   "disagree-agree-5-levels" render-answer-agree-disagree-5-levels
-   "text-area" render-answer-text-area})
+(def answer-templates
+  {:yes-no (fn [_] render-answer-yes-no)
+   :agree-disagree-5-levels (fn [_] render-answer-agree-disagree-5-levels)
+   :text-area (fn [_] render-answer-text-area)})
 
-(defn render-question 
-  [index {:keys [question-text answer-type required allow-na] :as question}]
+(defn render-answer-type [state-info answer-type]
+  (let [{:keys [template params]} (get-in state-info [:answer-types answer-type])
+        render-fn (get answer-templates template)]
+    (when render-fn
+      (render-fn params))))
+
+(defn render-question
+  [state-info index {:keys [question-text answer-type required allow-na] :as question}]
   ^{:key index}
   [:div.row
       [:p
         [:span.mr-1.font-weight-bold (str (inc index))] 
-        question-text 
+        question-text
         (when required [:span.alert.alert-info.ml-1.pl-1 "* Required"])]
-      (when-let [answer-renderer (get answer-types answer-type)]
-        (answer-renderer index question))
-      (when allow-na "Allow n/a")]) 
-       
+      (when-let [answer-renderer (render-answer-type state-info answer-type)]
+        (answer-renderer index question))])
+
 (defn question-list [state]
   (fn []
-    (let [questions (:questions @state)]
-      (when-not (empty? questions)
-        [:div.container 
-          (map-indexed render-question questions)]))))
+    (let [questions (:questions @state)
+          render-question-state (partial render-question @state)]
+      [:div.container
+        [:div.row
+          [:span.font-weight-bold (str "Question List " (count (:questions @state)) ")")]]
+        (when-not (empty? questions)
+          (map-indexed render-question-state questions))])))
 
 (defn home-page []
   [:div.container
@@ -153,31 +189,30 @@
         [:ul
           [:li "auto-save draft"]
           [:li "publish questionnaire"]]]]
+    [question-list state]
+    [:ul
+      [:li "Questions"
+        [:ul
+          [:li "Allow move up/down"]
+          [:li "Allow cut / copy / paste / delete"]]]]
     [question-adder state]
     [:ul
       [:li "Add a question"
         [:ul
           [:li "Set the type of answer to the question"]
           [:li "Set whether the question requires an answer or not"]
-          [:li "Provide Not Applicable as an answer"]]]]
+          [:li "Provide Not Applicable as an answer"]
+          [:li "Validate/sanitize free text fields, numbers, dates"]]]]
     [:ul
       [:li "View types of answers"
         [:ul
           [:li "Yes / No"]
           [:li "Strongly disagree .. Strongly agree (5 levels)"]
           [:li "Custom: Zero or more of the given values, in any order"]
-          [:li "Custom: Zero or more of the given values, in a given order or rank"]]]]
-    [question-list state]
-    [:ul
-      [:li (str "Question list (" (count (:questions @state)) ")")
-        [:ul
-          [:li "Allow move up/down"]
-          [:li "Allow cut / copy / paste / delete"]]]]])
-          
-
+          [:li "Custom: Zero or more of the given values, in a given order or rank"]]]]])
 
 (defn open-doc [surveyname] 
-  (POST "/survey/doc" 
+  (POST "/survey/doc"
         {:params 
          {:surveyname surveyname} 
          :handler 
@@ -190,3 +225,4 @@
 
 (defn init! []
   (mount-components))
+
