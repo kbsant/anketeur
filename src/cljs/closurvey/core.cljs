@@ -8,19 +8,30 @@
 (def yes-no-option
   {:option-text "Yes / No"
    :index 0
+   :predefined true
    :template :radio
-   :params {:radio ["Yes" "No"]}})
+   :params {:values ["Yes" "No"]}})
 
 (def agree-disagree-5-levels-option
   {:option-text "Disagree ... Agree (5 levels)"
    :index 1
+   :predefined true
    :template :radio
-   :params {:radio ["Strongly disagree" "Disagree" "Neither agree nor disagree"
+   :params {:values ["Strongly disagree" "Disagree" "Neither agree nor disagree"
                     "Agree" "Strongly agree"]}})
+
+(def test-multi-option
+  {:option-text "Test multi"
+   :index 3
+   :template :checkbox
+   :predefined true
+   :params {:values ["Eggs" "Poultry" "Fish" "Shellfish" "Crustaceans"
+                     "Meat" "Dairy" "Others"]}})
 
 (def text-area-option
   {:option-text "Free text"
    :index 2
+   :predefined true
    :template :text-area})
 
 (def empty-question
@@ -29,6 +40,12 @@
    :current-required false
    :current-allow-na false})
 
+(defn map-with-key
+  "Transform a sequence ({:k k1 ...}, {:k k2 ...}...)
+  into a map {k1 {:k k1 ...} k2 {:k k2, ...}}"
+  [key submaps]
+  (zipmap (map key submaps) submaps))
+
 (defonce state
   (r/atom
     (merge
@@ -36,9 +53,9 @@
       {:surveyname ""
        :questions []
        :answer-types
-        {(:option-text yes-no-option) yes-no-option
-         (:option-text agree-disagree-5-levels-option) agree-disagree-5-levels-option
-         (:option-text text-area-option) text-area-option}})))
+        (map-with-key
+          :option-text
+          [yes-no-option agree-disagree-5-levels-option test-multi-option text-area-option])})))
 
 (defn open-or-edit-selector [state]
   (fn []
@@ -111,40 +128,29 @@
       [:div.container
         [:div.row [:span.font-weight-bold "Add a customized type of answer"]]]))
 
-(defn render-template-radio [{:keys [radio]}]
+(defn render-template-radio-or-checkbox [radio-or-checkbox {:keys [values]}]
   (fn [index {:keys [allow-na]}]
-    (let [radio-name (str index)]
+    (let [input-name (str index)]
       [:form.inline
         (map-indexed
-          (fn [i radio-value]
+          (fn [i input-value]
             ^{:key i}
             [:label.mr-1
-              [:input.mr-1 {:type :radio :name radio-name :value radio-value}]
-              radio-value])
-          radio)
-        (when allow-na
+              [:input.mr-1 {:type radio-or-checkbox :name input-name :value input-value}]
+              input-value])
+          values)
+        (when (and allow-na (= :radio radio-or-checkbox))
           [:label.mr-1
             [:input.mr-1 {:type :radio :name (str index) :value "Not applicable"}]
             "Not applicable"])])))
-
-(defn render-answer-checkbox [index {:keys [allow-na]}]
-  [:form.inline
-    [:label.mr-1
-      [:input.mr-1 {:type :checkbox :name (str index) :value "strongly-disagree"}]
-      "Strongly disagree"]
-    [:label.mr-1
-      [:input.mr-1 {:type :checkbox :name (str index) :value "disagree"}]
-      "Disagree"]
-    [:label.mr-1
-      [:input.mr-1 {:type :checkbox :name (str index) :value "neither-agree-nor-disagree"}]
-      "Neither agree nor disagree"]])
 
 (defn render-answer-text-area [_ _]
   [:form.inline
     [:textarea]])
 
 (def answer-templates
-  {:radio render-template-radio
+  {:radio (partial render-template-radio-or-checkbox :radio)
+   :checkbox (partial render-template-radio-or-checkbox :checkbox)
    :text-area (fn [_] render-answer-text-area)})
 
 (defn render-answer-type [state-info answer-type]
