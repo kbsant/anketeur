@@ -13,9 +13,9 @@ Work In Progress -- Early stage.
 
 ## Non-goals
 
-* This app does not include user management and does not collect user identification. Data ownership is managed entirely by pass-phrases. Unless customized to integrate with authentication systems, pass-phrases can only be reset manually.
+* This app keeps user management minimal. Unless customized to integrate with authentication systems, pass-phrases can only be reset manually.
 
-* This app does not collect or send emails. It is up to the survey organizer to provide the link to the respondents.
+* This app does not send emails. It is up to the survey organizer to provide the link to the respondents.
 
 ## Prerequisites
 
