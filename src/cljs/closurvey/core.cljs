@@ -40,6 +40,10 @@
    :current-required false
    :current-allow-na false})
 
+(def empty-custom-answer
+  {:custom-answer-name ""
+   :custom-answer-items []})
+
 (defn map-with-key
   "Transform a sequence ({:k k1 ...}, {:k k2 ...}...)
   into a map {k1 {:k k1 ...} k2 {:k k2, ...}}"
@@ -62,15 +66,18 @@
     [:div.container
       [:div.row [:span.font-weight-bold "Create or edit a survey"]]
       [:div.row
-        [:input {:type :text
-                 :value (:surveyname @state)
-                 :placeholder "Survey name"
-                 :on-change (event/assoc-with-js-value state :surveyname)}]
-        [:input {:type :button
-                 :value "Create new"}]
-        [:input {:type :button
-                 :value "Open existing"}]]
-      [:div.row 
+        [:input.mr-1
+          {:type :text
+           :value (:surveyname @state)
+           :placeholder "Survey name"
+           :on-change (event/assoc-with-js-value state :surveyname)}]
+        [:input.mr-1
+          {:type :button
+           :value "Create new"}]
+        [:input.mr-1
+          {:type :button
+           :value "Open existing"}]]
+      [:div.row
         [:span "Properties..."]]]))
 
 (defn build-current-question
@@ -96,26 +103,30 @@
 (defn question-adder [state]
   (fn []
     [:div.container
-      [:div.row  [:span.font-weight-bold "Add a question"]]
+      [:div.row  [:span.font-weight-bold "Add/edit a question"]]
       [:div.row
-        [:input {:type :text 
-                 :value (:current-question-text @state)
-                 :placeholder "Question"
-                 :on-change (event/assoc-with-js-value state :current-question-text)}]
-        [:select {:value (:current-answer-type @state)
-                  :on-change (event/assoc-with-js-value state :current-answer-type)}
+        [:input.mr-1
+          {:type :text
+           :value (:current-question-text @state)
+           :placeholder "Question"
+           :on-change (event/assoc-with-js-value state :current-question-text)}]
+        [:select.mr-1
+          {:value (:current-answer-type @state)
+           :on-change (event/assoc-with-js-value state :current-answer-type)}
           (render-select-options (:answer-types @state))]
-        [:label
-          [:input {:type :checkbox 
-                   :checked (:current-required @state)
-                   :value (:current-required @state)
-                   :on-click (event/update-with-js-value state :current-required not)}]
+        [:label.mr-1
+          [:input.mr-1
+            {:type :checkbox
+             :checked (:current-required @state)
+             :value (:current-required @state)
+             :on-click (event/update-with-js-value state :current-required not)}]
           "Require an answer"]
-        [:label
-          [:input {:type :checkbox 
-                   :checked (:current-allow-na @state)
-                   :value (:current-allow-na @state)
-                   :on-click (event/update-with-js-value state :current-allow-na not)}]
+        [:label.mr-1
+          [:input.mr-1
+            {:type :checkbox
+             :checked (:current-allow-na @state)
+             :value (:current-allow-na @state)
+             :on-click (event/update-with-js-value state :current-allow-na not)}]
           "Provide Not Applicable"]
         [:input {:type :button
                  :value "Add"
@@ -126,7 +137,15 @@
 (defn answer-customizer [state]
   (fn []
       [:div.container
-        [:div.row [:span.font-weight-bold "Add a customized type of answer"]]]))
+        [:div.row [:span.font-weight-bold "Add/edit a custom answer type"]]
+        [:div.row
+          [:input.mr-1 {:type :text :placeholder "Name of the answer type"}]
+          [:select
+            [:option "Single selection"]
+            [:option "Multiple selection"]]]
+        [:div.row
+          [:input.mr-1 {:type :text :placeholder "Answer text"}]
+          [:input {:type :button :value "Add"}]]]))
 
 (defn render-template-radio-or-checkbox [radio-or-checkbox {:keys [values]}]
   (fn [index {:keys [allow-na]}]
@@ -199,7 +218,7 @@
           [:li "Allow cut / copy / paste / delete"]]]]
     [question-adder state]
     [:ul
-      [:li "Add a question"
+      [:li "Add/edit a question"
         [:ul
           [:li "Set the type of answer to the question"]
           [:li "Set whether the question requires an answer or not"]
@@ -207,12 +226,17 @@
           [:li "Validate/sanitize free text fields, numbers, dates"]]]]
     [answer-customizer state]
     [:ul
-      [:li "View types of answers"
+      [:li "Add/edit types of answers"
         [:ul
-          [:li "Yes / No"]
-          [:li "Strongly disagree .. Strongly agree (5 levels)"]
-          [:li "Custom: Zero or more of the given values, in any order"]
-          [:li "Custom: Zero or more of the given values, in a given order or rank"]]]]])
+          [:li "Customize single selection answers"]
+          [:li "Customize multiple selection answers"]
+          [:li "Customize named scale 1 (Least something*) to n (Most something*)"]
+          [:li "Ranking of items -- drag and drop? move up/down?"]
+          [:li "Don't edit predefined answer types"
+            [:ul
+              [:li "Yes / No"]
+              [:li "Strongly disagree .. Strongly agree (5 levels)"]
+              [:li "Free text"]]]]]]])
 
 (defn open-doc [surveyname] 
   (POST "/survey/doc"
