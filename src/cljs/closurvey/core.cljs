@@ -8,12 +8,15 @@
 (def yes-no-option
   {:option-text "Yes / No"
    :index 0
-   :template :yes-no})
+   :template :radio
+   :params {:radio ["Yes" "No"]}})
 
 (def agree-disagree-5-levels-option
   {:option-text "Disagree ... Agree (5 levels)"
    :index 1
-   :template :agree-disagree-5-levels})
+   :template :radio
+   :params {:radio ["Strongly disagree" "Disagree" "Neither agree nor disagree"
+                    "Agree" "Strongly agree"]}})
 
 (def text-area-option
   {:option-text "Free text"
@@ -105,50 +108,43 @@
 
 (defn answer-customizer [state]
   (fn []
-      [:div.container]))
+      [:div.container
+        [:div.row [:span.font-weight-bold "Add a customized type of answer"]]]))
 
-(defn render-answer-yes-no [index {:keys [allow-na]}]
+(defn render-template-radio [{:keys [radio]}]
+  (fn [index {:keys [allow-na]}]
+    (let [radio-name (str index)]
+      [:form.inline
+        (map-indexed
+          (fn [i radio-value]
+            ^{:key i}
+            [:label.mr-1
+              [:input.mr-1 {:type :radio :name radio-name :value radio-value}]
+              radio-value])
+          radio)
+        (when allow-na
+          [:label.mr-1
+            [:input.mr-1 {:type :radio :name (str index) :value "Not applicable"}]
+            "Not applicable"])])))
+
+(defn render-answer-checkbox [index {:keys [allow-na]}]
   [:form.inline
     [:label.mr-1
-      [:input.mr-1 {:type :radio :name (str index) :value "yes"}]
-      "Yes"] 
+      [:input.mr-1 {:type :checkbox :name (str index) :value "strongly-disagree"}]
+      "Strongly disagree"]
     [:label.mr-1
-      [:input.mr-1 {:type :radio :name (str index) :value "no"}]
-      "No"] 
-    (when allow-na 
-       [:label.mr-1
-         [:input.mr-1 {:type :radio :name (str index) :value "Not applicable"}]
-         "Not applicable"])])
-
-(defn render-answer-agree-disagree-5-levels [index {:keys [allow-na]}]
-  [:form.inline
+      [:input.mr-1 {:type :checkbox :name (str index) :value "disagree"}]
+      "Disagree"]
     [:label.mr-1
-      [:input.mr-1 {:type :radio :name (str index) :value "strongly-disagree"}]
-      "Strongly disagree"] 
-    [:label.mr-1
-      [:input.mr-1 {:type :radio :name (str index) :value "disagree"}]
-      "Strongly disagree"] 
-    [:label.mr-1
-      [:input.mr-1 {:type :radio :name (str index) :value "neither-agree-nor-disagree"}]
-      "Neither agree nor disagree"] 
-    [:label.mr-1
-      [:input.mr-1 {:type :radio :name (str index) :value "agree"}]
-      "Agree"] 
-    [:label.mr-1
-      [:input.mr-1 {:type :radio :name (str index) :value "strongly-agree"}]
-      "Strongly agree"]
-    (when allow-na 
-      [:label.mr-1
-        [:input.mr-1 {:type :radio :name (str index) :value "Not applicable"}]
-        "Not applicable"])])
+      [:input.mr-1 {:type :checkbox :name (str index) :value "neither-agree-nor-disagree"}]
+      "Neither agree nor disagree"]])
 
 (defn render-answer-text-area [_ _]
   [:form.inline
     [:textarea]])
 
 (def answer-templates
-  {:yes-no (fn [_] render-answer-yes-no)
-   :agree-disagree-5-levels (fn [_] render-answer-agree-disagree-5-levels)
+  {:radio render-template-radio
    :text-area (fn [_] render-answer-text-area)})
 
 (defn render-answer-type [state-info answer-type]
@@ -174,7 +170,7 @@
           render-question-state (partial render-question @state)]
       [:div.container
         [:div.row
-          [:span.font-weight-bold (str "Question List " (count (:questions @state)) ")")]]
+          [:span.font-weight-bold (str "Question List (" (count (:questions @state)) ")")]]
         (when-not (empty? questions)
           (map-indexed render-question-state questions))])))
 
@@ -203,6 +199,7 @@
           [:li "Set whether the question requires an answer or not"]
           [:li "Provide Not Applicable as an answer"]
           [:li "Validate/sanitize free text fields, numbers, dates"]]]]
+    [answer-customizer state]
     [:ul
       [:li "View types of answers"
         [:ul
