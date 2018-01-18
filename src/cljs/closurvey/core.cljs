@@ -40,6 +40,12 @@
    :current-required false
    :current-allow-na false})
 
+(def new-question
+  {:question-text ""
+   :answer-type (:option-text yes-no-option)
+   :required false
+   :allow-na false})
+
 (def empty-custom-answer
   {:custom-answer-name ""
    :custom-answer-items []})
@@ -55,30 +61,55 @@
     (merge
       empty-question
       {:surveyname ""
-       :questions []
+       :question-list []
+       :question-index
+        {:new-question (assoc new-question :index :new-question)}
        :answer-types
         (map-with-key
           :option-text
           [yes-no-option agree-disagree-5-levels-option test-multi-option text-area-option])})))
 
+(defn question-list-view
+  "question-index holds the indexed data, while the order is determined by question-list.
+  To obtain a list view of the questions, de-reference the index using the question list." 
+  [state-info]
+  (map (:question-index state-info) (:question-list state-info)))
+
+(defn next-question-id [question-index]
+  (->> question-index
+       keys
+       (filter number?)
+       (concat [0])
+       (apply max)
+       inc))
+
+(defn add-question
+  "Add a question to both the question index and list. 
+  To update the state, use this function with swap! ." 
+  [state-info question]
+  (let [question-id (next-question-id (:question-index state-info))
+        question-info (assoc question :index question-id)]
+    (-> state-info
+      (assoc-in [:question-index question-id] question-info)
+      (update :question-list conj question-id))))
+
 (defn open-or-edit-selector [state]
-  (fn []
-    [:div.container
-      [:div.row [:span.font-weight-bold "Create or edit a survey"]]
-      [:div.row
-        [:input.mr-1
-          {:type :text
-           :value (:surveyname @state)
-           :placeholder "Survey name"
-           :on-change (event/assoc-with-js-value state :surveyname)}]
-        [:input.mr-1
-          {:type :button
-           :value "Create new"}]
-        [:input.mr-1
-          {:type :button
-           :value "Open existing"}]]
-      [:div.row
-        [:span "Properties..."]]]))
+  [:div.container
+    [:div.row [:span.font-weight-bold "Create or edit a survey"]]
+    [:div.row
+      [:input.mr-1
+        {:type :text
+         :value (:surveyname @state)
+         :placeholder "Survey name"
+         :on-change (event/assoc-with-js-value state :surveyname)}]
+      [:input.mr-1
+        {:type :button
+         :value "Create new"}]
+      [:input.mr-1
+        {:type :button
+         :value "Open existing"}]]
+    [:div.row
+      [:span "Properties..."]]])
 
 (defn build-current-question
   [{:keys [current-question-text current-answer-type current-required current-allow-na]}]
@@ -100,52 +131,91 @@
             ^{:key i}
             [:option option-text]))))
 
+
 (defn question-adder [state]
-  (fn []
-    [:div.container
-      [:div.row  [:span.font-weight-bold "Add/edit a question"]]
-      [:div.row
+  [:div.container
+    [:div.row  [:span.font-weight-bold "Add/edit a question"]]
+    [:div.row
+      [:input.mr-1
+        {:type :text
+         :value (:current-question-text @state)
+         :placeholder "Question"
+         :on-change (event/assoc-with-js-value state :current-question-text)}]
+      [:select.mr-1
+        {:value (:current-answer-type @state)
+         :on-change (event/assoc-with-js-value state :current-answer-type)}
+        (render-select-options (:answer-types @state))]
+      [:label.mr-1
         [:input.mr-1
-          {:type :text
-           :value (:current-question-text @state)
-           :placeholder "Question"
-           :on-change (event/assoc-with-js-value state :current-question-text)}]
-        [:select.mr-1
-          {:value (:current-answer-type @state)
-           :on-change (event/assoc-with-js-value state :current-answer-type)}
-          (render-select-options (:answer-types @state))]
-        [:label.mr-1
-          [:input.mr-1
-            {:type :checkbox
-             :checked (:current-required @state)
-             :value (:current-required @state)
-             :on-click (event/update-with-js-value state :current-required not)}]
-          "Require an answer"]
-        [:label.mr-1
-          [:input.mr-1
-            {:type :checkbox
-             :checked (:current-allow-na @state)
-             :value (:current-allow-na @state)
-             :on-click (event/update-with-js-value state :current-allow-na not)}]
-          "Provide Not Applicable"]
-        [:input {:type :button
-                 :value "Add"
-                 :on-click #(when-let [q (build-current-question @state)]
-                              (swap! state update :questions conj q)
-                              (swap! state merge empty-question))}]]]))
+          {:type :checkbox
+           :checked (:current-required @state)
+           :value (:current-required @state)
+           :on-click (event/update-with-js-value state :current-required event/js-not)}]
+        "Require an answer"]
+      [:label.mr-1
+        [:input.mr-1
+          {:type :checkbox
+           :checked (:current-allow-na @state)
+           :value (:current-allow-na @state)
+           :on-click (event/update-with-js-value state :current-allow-na event/js-not)}]
+        "Provide Not Applicable"]
+      [:input {:type :button
+               :value "Add"
+               :on-click #(when-let [q (build-current-question @state)]
+                            (swap! state add-question q)
+                            (swap! state merge empty-question))}]]])
+
+(defn edit-question
+  [state i {:keys [question-text answer-type required allow-na index] :as question}]
+  ^{:key i}
+  [:div.container
+    [:div.row
+      [:span.mr-1.font-weight-bold (str (inc i))]
+      [:input.mr-1
+        {:type :text
+         :value question-text
+         :placeholder "Question"
+         :on-change (event/assoc-in-with-js-value
+                      state
+                      [:question-index index :question-text])}]
+      [:select.mr-1
+        {:value answer-type
+         :on-change (event/assoc-in-with-js-value
+                      state
+                      [:question-index index :answer-type])}
+        (render-select-options (:answer-types @state))]
+      [:label.mr-1
+        [:input.mr-1
+          {:type :checkbox
+           :checked required
+           :value required
+           :on-change #(swap!
+                        state update-in
+                        [:question-index index :required]
+                        not)}]
+        "Require an answer"]
+      [:label.mr-1
+        [:input.mr-1
+          {:type :checkbox
+           :checked allow-na
+           :value allow-na
+           :on-change #(swap!
+                        state update-in
+                        [:question-index index :allow-na]
+                        not)}]
+        "Provide Not Applicable"]]])
 
 (defn answer-customizer [state]
-  (fn []
-      [:div.container
-        [:div.row [:span.font-weight-bold "Add/edit a custom answer type"]]
-        [:div.row
-          [:input.mr-1 {:type :text :placeholder "Name of the answer type"}]
-          [:select
-            [:option "Single selection"]
-            [:option "Multiple selection"]]]
-        [:div.row
-          [:input.mr-1 {:type :text :placeholder "Answer text"}]
-          [:input {:type :button :value "Add"}]]]))
+  [:div.container
+    [:div.row [:span.font-weight-bold "Add/edit a custom answer type"]]
+    [:div.row
+      [:input.mr-1 {:type :text :placeholder "Name of the answer type"}]
+      [:select
+        [:option "Single selection"]
+        [:option "Multiple selection"]]]
+    [:div.row
+      [:input.mr-1 {:type :text :placeholder "Answer text"}]
+      [:input {:type :button :value "Add"}]]])
 
 (defn render-template-radio-or-checkbox [radio-or-checkbox {:keys [values]}]
   (fn [index {:keys [allow-na]}]
@@ -178,12 +248,12 @@
     (when render-fn
       (render-fn params))))
 
-(defn render-question
+(defn preview-question
   [state-info index {:keys [question-text answer-type required allow-na] :as question}]
   ^{:key index}
   [:div.row
       [:p
-        [:span.mr-1.font-weight-bold (str (inc index))] 
+        [:span.mr-1.font-weight-bold (str (inc index))]
         question-text
         (when required [:span.alert.alert-info.ml-1.pl-1 "* Required"])]
       (when-let [answer-renderer (render-answer-type state-info answer-type)]
@@ -191,13 +261,24 @@
 
 (defn question-list [state]
   (fn []
-    (let [questions (:questions @state)
-          render-question-state (partial render-question @state)]
+    (let [questions (question-list-view @state)
+          render-question (if (:question-edit-mode @state) 
+                              (partial edit-question state)
+                              (partial preview-question @state))]
       [:div.container
         [:div.row
-          [:span.font-weight-bold (str "Question List (" (count (:questions @state)) ")")]]
+          [:span.font-weight-bold (str "Question List (" (count questions) ")")]
+          [:input.mr-1
+            {:type :button
+             :on-click #(swap! state assoc :question-edit-mode false) 
+             :value "Preview mode"}]
+          [:input.mr-1
+            {:type :button
+             :on-click #(swap! state assoc :question-edit-mode true) 
+             :value "Edit mode"}]]
         (when-not (empty? questions)
-          (map-indexed render-question-state questions))])))
+          (doall
+            (map-indexed render-question questions)))])))
 
 (defn home-page []
   [:div.container
