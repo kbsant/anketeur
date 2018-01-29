@@ -20,6 +20,13 @@
    :params {:values ["Strongly disagree" "Disagree" "Neither agree nor disagree"
                     "Agree" "Strongly agree"]}})
 
+(def rating-5-levels-option
+  {:option-text "Rating (5 levels)"
+   :index 2
+   :predefined true
+   :template :radio
+   :params {:values ["1" "2" "3" "4" "5"]}})
+
 (def test-multi-option
   {:option-text "Test multi"
    :index 3
@@ -30,7 +37,7 @@
 
 (def text-area-option
   {:option-text "Free text"
-   :index 2
+   :index 4
    :predefined true
    :template :text-area})
 
@@ -67,7 +74,7 @@
        :answer-types
         (map-with-key
           :option-text
-          [yes-no-option agree-disagree-5-levels-option test-multi-option text-area-option])})))
+          [yes-no-option agree-disagree-5-levels-option rating-5-levels-option test-multi-option text-area-option])})))
 
 (defn question-list-view
   "question-index holds the indexed data, while the order is determined by question-list.
@@ -150,14 +157,14 @@
           {:type :checkbox
            :checked (:current-required @state)
            :value (:current-required @state)
-           :on-click (event/update-with-js-value state :current-required event/js-not)}]
+           :on-change #(swap! state update :current-required not)}]
         "Require an answer"]
       [:label.mr-1
         [:input.mr-1
           {:type :checkbox
            :checked (:current-allow-na @state)
            :value (:current-allow-na @state)
-           :on-click (event/update-with-js-value state :current-allow-na event/js-not)}]
+           :on-change #(swap! state update :current-allow-na not)}]
         "Provide Not Applicable"]
       [:input {:type :button
                :value "Add"
