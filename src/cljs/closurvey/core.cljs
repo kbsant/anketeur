@@ -69,6 +69,7 @@
 (def empty-custom-answer
   {:custom-answer-name ""
    :custom-answer-num-input nil
+   :custom-answer-text-input [""]
    :custom-answer-type (first (keys answer-template-options))
    :custom-answer-items []})
 
@@ -222,8 +223,28 @@
                         not)}]
         "Provide Not Applicable"]]])
 
-(defn answer-text-input-fn [state-info]
-  [:input.mr-1 {:type :text :placeholder "Answer text"}])
+(defn answer-text-input-fn [state]
+  (let [custom-answer-text-input (concat (:custom-answer-text-input @state) [""])]
+   [:form
+    (map-indexed
+      (fn [i v]
+        ^{:key i}
+        [:input.mr-1
+          {:type :text
+           :placeholder "Answer text"
+           :value v
+           :on-change
+            (event/assoc-in-with-js-value
+              state
+              [:custom-answer-text-input i])}])
+      custom-answer-text-input)]))
+
+(defn answer-text-value-fn [state-info]
+  (let [value (:custom-answer-text-input state-info)]
+    (when (and
+            (seq value)
+            (not (string/blank? (first value))))
+      value)))
 
 (defn answer-num-input-fn [state]
   [:input.mr-1 {:type :number
@@ -245,7 +266,7 @@
 (def custom-answer-input-fn
   {:text
     {:render-fn answer-text-input-fn
-     :value-fn (fn [_] ["t1" "t2"])}
+     :value-fn answer-text-value-fn}
    :rating
     {:render-fn answer-num-input-fn
      :value-fn answer-num-value-fn}})
@@ -258,7 +279,6 @@
         value-fn (get-in custom-answer-input-fn [param-type :value-fn])
         custom-answer-params (value-fn state-info)
         index (->> answer-types vals (map :index) (concat [0]) last)]
-    (js/alert (str "p " param-type "vp " custom-answer-params))
     (when (and
             (not (string/blank? custom-answer-name))
             (seq custom-answer-params)
