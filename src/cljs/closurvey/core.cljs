@@ -53,20 +53,30 @@
    :required false
    :allow-na false})
 
-(def empty-custom-answer
-  {:custom-answer-name ""
-   :custom-answer-items []})
-
 (defn map-with-key
   "Transform a sequence ({:k k1 ...}, {:k k2 ...}...)
   into a map {k1 {:k k1 ...} k2 {:k k2, ...}}"
   [key submaps]
   (zipmap (map key submaps) submaps))
 
+(def answer-template-options
+  (map-with-key
+    :option-text
+    [{:index 0, :option-text "Single selection", :template :radio, :param-type :text}
+     {:index 1, :option-text "Multiple selection", :template :checkbox, :param-type :text}
+     {:index 2, :option-text "Rating", :template :radio, :param-type :rating}]))
+
+(def empty-custom-answer
+  {:custom-answer-name ""
+   :custom-answer-num-input nil
+   :custom-answer-type (first (keys answer-template-options))
+   :custom-answer-items []})
+
 (defonce state
   (r/atom
     (merge
       empty-question
+      empty-custom-answer
       {:surveyname ""
        :question-list []
        :question-index
@@ -212,17 +222,82 @@
                         not)}]
         "Provide Not Applicable"]]])
 
+(defn answer-text-input-fn [state-info]
+  [:input.mr-1 {:type :text :placeholder "Answer text"}])
+
+(defn answer-num-input-fn [state]
+  [:input.mr-1 {:type :number
+                :min 2
+                :max 20
+                :placeholder "Max rating"
+                :value (:custom-answer-num-input @state)
+                :on-change
+                  (event/assoc-with-js-value
+                    state
+                    :custom-answer-num-input)}])
+
+(defn answer-num-value-fn [state-info]
+  (let [value (:custom-answer-num-input state-info)
+        max (and value (js/parseInt value))]
+    (when max
+      (into [] (map str (range 1 (inc max)))))))
+
+(def custom-answer-input-fn
+  {:text
+    {:render-fn answer-text-input-fn
+     :value-fn (fn [_] ["t1" "t2"])}
+   :rating
+    {:render-fn answer-num-input-fn
+     :value-fn answer-num-value-fn}})
+
+(defn build-custom-answer
+  [{:keys [custom-answer-type custom-answer-name custom-answer-params answer-types]
+    :as state-info}]
+  (let [template (get-in answer-template-options [custom-answer-type :template])
+        param-type (get-in answer-template-options [custom-answer-type :param-type])
+        value-fn (get-in custom-answer-input-fn [param-type :value-fn])
+        custom-answer-params (value-fn state-info)
+        index (->> answer-types vals (map :index) (concat [0]) last)]
+    (js/alert (str "p " param-type "vp " custom-answer-params))
+    (when (and
+            (not (string/blank? custom-answer-name))
+            (seq custom-answer-params)
+            template index)
+      {:option-text custom-answer-name
+       :index index
+       :template template
+       :params {:values custom-answer-params}})))
+
+(defn render-custom-answer-input [state]
+  (let [custom-answer-type (:custom-answer-type @state)
+        param-type (get-in answer-template-options [custom-answer-type :param-type])
+        render-fn (get-in custom-answer-input-fn [param-type :render-fn])]
+    (when render-fn
+      (render-fn state))))
+
 (defn answer-customizer [state]
   [:div.container
     [:div.row [:span.font-weight-bold "Add/edit a custom answer type"]]
     [:div.row
-      [:input.mr-1 {:type :text :placeholder "Name of the answer type"}]
+      [:input.mr-1
+       {:type :text
+        :placeholder "Name of the answer type"
+        :value (:custom-answer-name @state)
+        :on-change (event/assoc-with-js-value state :custom-answer-name)}]
       [:select
-        [:option "Single selection"]
-        [:option "Multiple selection"]]]
+        {:value (:custom-answer-type @state)
+         :on-change (event/assoc-with-js-value state :custom-answer-type)}
+        (render-select-options answer-template-options)]]
     [:div.row
-      [:input.mr-1 {:type :text :placeholder "Answer text"}]
-      [:input {:type :button :value "Add"}]]])
+      [render-custom-answer-input state]
+      [:input {:type :button
+               :value "Add"
+               :on-click #(when-let [new-answer (build-custom-answer @state)]
+                            (swap! state
+                                   assoc-in
+                                   [:answer-types (:option-text new-answer)]
+                                   new-answer)
+                            (swap! state merge empty-custom-answer))}]]])
 
 (defn render-template-radio-or-checkbox [radio-or-checkbox {:keys [values]}]
   (fn [index {:keys [allow-na]}]
@@ -277,11 +352,11 @@
           [:span.font-weight-bold (str "Question List (" (count questions) ")")]
           [:input.mr-1
             {:type :button
-             :on-click #(swap! state assoc :question-edit-mode false) 
+             :on-click #(swap! state assoc :question-edit-mode false)
              :value "Preview mode"}]
           [:input.mr-1
             {:type :button
-             :on-click #(swap! state assoc :question-edit-mode true) 
+             :on-click #(swap! state assoc :question-edit-mode true)
              :value "Edit mode"}]]
         (when-not (empty? questions)
           (doall
