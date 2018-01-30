@@ -357,7 +357,7 @@
       [:p
         [:span.mr-1.font-weight-bold (str (inc index))]
         question-text
-        (when required [:span.alert.alert-info.ml-1.pl-1 "* Required"])]
+        (when required [:span.alert.alert-info.ml-1.pl-1.py-0.my-0.small "* Required"])]
       (when-let [answer-renderer (render-answer-type state-info answer-type)]
         (answer-renderer index question))])
 
