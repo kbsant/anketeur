@@ -40,7 +40,7 @@
         (log/error t (.getMessage t))
         (error-page {:status 500
                      :title "Server error"
-                     :message "An error has occurred and logged for support. Please contact support for any urgent requests."})))))
+                     :message "An error occurred and has been logged. Please contact support for any urgent requests."})))))
 
 (defn wrap-csrf [handler]
   (wrap-anti-forgery

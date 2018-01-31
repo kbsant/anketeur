@@ -8,7 +8,8 @@
 
 (defroutes home-routes
   (GET "/" [] (main/render))
-  (GET "/edit" [] (edit/render))
+  (GET "/edit" [] (edit/render-opener))
+  (GET "/edit/:surveyname" [surveyname] (edit/render-editor surveyname))
   (GET "/docs" []
        (-> (response/ok (-> "docs/docs.md" io/resource slurp))
            (response/header "Content-Type" "text/plain; charset=utf-8"))))
