@@ -87,6 +87,14 @@
           :option-text
           [yes-no-option agree-disagree-5-levels-option rating-5-levels-option test-multi-option text-area-option])})))
 
+(defn vswap
+  "Swap items in a vector if indexes are in bounds."
+  [v i1 i2]
+  (if (and (< -1 i1 i2) (< i2 (count v)))
+    (let [e1 (v i1), e2 (v i2)]
+      (assoc v i1 e2 i2 e1))
+    v))
+
 (defn question-list-view
   "question-index holds the indexed data, while the order is determined by question-list.
   To obtain a list view of the questions, de-reference the index using the question list." 
@@ -188,6 +196,14 @@
   ^{:key i}
   [:div.container
     [:div.row
+      [:input.mr-1
+       {:type :button
+        :value "↑"
+        :on-click #(swap! state update :question-list vswap (dec i) i)}]
+      [:input.mr-1
+       {:type :button
+        :value "↓"
+        :on-click #(swap! state update :question-list vswap i (inc i))}]
       [:span.mr-1.font-weight-bold (str (inc i))]
       [:input.mr-1
         {:type :text
