@@ -9,18 +9,29 @@
 (defn read-app-table [table-name]
   (fs/read-table (:app-data-dir env) table-name))
 
+(declare flush-table)
+
 ;; Holder of state for store
 (defstate survey-table
   :start (read-app-table "survey-table") 
-  :stop (fs/write-table survey-table))
+  :stop (flush-table survey-table))
 
 (defn view [table]
   (some-> table :data deref)) 
+
+(defn flush-table [table]
+  (fs/write-table table))
 
 ;; TODO caller should check if survey-info is nil, then retry
 (defn insert-survey [surveyname roles]
   (let [surveyno (java.util.UUID/randomUUID)
         survey-info {:surveyname surveyname :surveyno surveyno :roles roles}]
+    (swap! (:data survey-table) assoc surveyno survey-info)
+    (when (= surveyno (:surveyno survey-info))
+      survey-info)))
+
+(defn upsert-survey [survey-info]
+  (let [surveyno (or (:surveyno survey-info) (java.util.UUID/randomUUID))]
     (swap! (:data survey-table) assoc surveyno survey-info)
     (when (= surveyno (:surveyno survey-info))
       survey-info)))
