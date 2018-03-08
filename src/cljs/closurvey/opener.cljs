@@ -9,19 +9,22 @@
   (r/atom
     {:doclist []}))
 
+(defn render-selector-row
+  [i {:keys [surveyno surveyname]}]
+  ^{:key i}
+  [:li
+    [:a
+      {:href (str"/edit/" surveyno)}
+      (or surveyname [:span.label.label-default "(no name)"])]])
+
+
 (defn doc-selector [state]
   (fn []
     (let [doclist (:doclist @state)]
      [:p (str "aaa " doclist)
       (when-not (empty? doclist)
-        [:form {:method :post :action "/edit"}
-          [:ul
-            (->> doclist
-              (map-indexed
-                (fn [i {:keys [surveyno]}]
-                  ^{:key i}
-                  [:li surveyno])))]])])))
-
+        [:ul
+          (map-indexed render-selector-row doclist)])])))
 
 (defn home-page []
   [:div.container

@@ -16,12 +16,12 @@
         {:type "text/javascript"}
         "closurvey.app.init_opener();"])))
 
-(defn editor [{:keys [surveyname flash-errors] :as data}]
+(defn editor [{:keys [survey-info flash-errors] :as data}]
   (parts/appbase
     data
     (parts/js-transit-state 
       "transitState"
-      {:surveyname surveyname :flash-errors flash-errors})
+      {:survey-info survey-info :flash-errors flash-errors})
     (list
       (page/include-js "/js/app.js") 
       [:script 

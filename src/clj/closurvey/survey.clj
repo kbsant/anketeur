@@ -22,6 +22,9 @@
 (defn flush-table [table]
   (fs/write-table table))
 
+(defn as-id [s]
+  (java.util.UUID/fromString s))
+
 ;; TODO caller should check if survey-info is nil, then retry
 (defn insert-survey [surveyname roles]
   (let [surveyno (java.util.UUID/randomUUID)

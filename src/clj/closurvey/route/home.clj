@@ -11,6 +11,7 @@
   (POST "/add" [] (edit/add-action))
   (GET "/open" [] (edit/render-opener))
   (GET "/edit" request (edit/render-editor request))
+  (GET "/edit/:surveyno" [surveyno] (edit/render-editor surveyno))
   (GET "/docs" []
        (-> (response/ok (-> "docs/docs.md" io/resource slurp))
            (response/header "Content-Type" "text/plain; charset=utf-8"))))
