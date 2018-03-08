@@ -13,9 +13,14 @@
 (defn write-json [value]
   (t/write json-writer value))
 
-(defn read-transit-state [encoded-js-state state-keys]
-  (let [transit-state (read-json (base64/decodeString encoded-js-state))]
-    (select-keys transit-state state-keys)))
+(defn read-transit-state
+  ([encoded-js-state]
+   (read-transit-state encoded-js-state nil)) 
+  ([encoded-js-state state-keys]
+   (let [transit-state (read-json (base64/decodeString encoded-js-state))]
+      (if state-keys
+        (select-keys transit-state state-keys)
+        transit-state))))
 
 (defn anti-forgery-field [csrf-token]
   [:input.__anti-forgery-token 

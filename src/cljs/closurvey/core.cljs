@@ -3,6 +3,7 @@
     [clojure.string :as string]
     [closurvey.client.event :as event] 
     [reagent.core :as r]
+    [closurvey.client.ui :as ui]
     [ajax.core :refer [GET POST]]))
 
 (def yes-no-option
@@ -73,6 +74,9 @@
    :custom-answer-type (first (keys answer-template-options))
    :custom-answer-items []})
 
+(defonce docstate
+  (atom {}))
+
 (defonce state
   (r/atom
     (merge
@@ -121,8 +125,10 @@
 
 (defn open-or-edit-selector [state]
   [:div.container
-    [:div.row [:span.font-weight-bold "Create or edit a survey"]]
+    [:div.row [:span.font-weight-bold "Edit a survey"]]
     [:div.row
+      [:p (-> @state :surveyno str)]
+      [:p (str @docstate)]
       [:input.mr-1
         {:type :text
          :value (:surveyname @state)
@@ -130,10 +136,10 @@
          :on-change (event/assoc-with-js-value state :surveyname)}]
       [:input.mr-1
         {:type :button
-         :value "Create new"}]
+         :value "Save"}]
       [:input.mr-1
         {:type :button
-         :value "Open existing"}]]
+         :value "Save and publish"}]]
     [:div.row
       [:span "Properties..."]]])
 
@@ -404,7 +410,6 @@
     [:h1 "Survey Editor"]
     [open-or-edit-selector state]
     [:ul
-      [:li "Add a survey"]
       [:li "Edit a survey"
         [:ul
           [:li "auto-save draft"]
@@ -449,6 +454,12 @@
 (defn mount-components []
   (r/render [home-page] (.getElementById js/document "app")))
 
+(defn load-transit! []
+  (let [{:keys [survey-info flash-errors]} (ui/read-transit-state js/transitState)]
+    (swap! state merge survey-info)
+    (reset! docstate @state)))
+
 (defn init! []
-  (mount-components))
+  (mount-components)
+  (load-transit!))
 
