@@ -6,8 +6,8 @@
     [hiccup.page :as page]))
 
 (defn js-script [& contents]
-  [:script {:type "text/javascript"}  
-    (apply str contents)]) 
+  [:script {:type "text/javascript"}
+    (apply str contents)])
 
 (defn js-var [name value]
   (str "var " name " = " value ";"))
@@ -32,12 +32,12 @@
       [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0"}]
       [:link {:rel "shortcut icon" :type "image/png" :href "/img/favicon.png"}]
       [:title (glossary :title)]
-      (page/include-css 
+      (page/include-css
          "/assets/bootstrap/css/bootstrap.min.css"
-         "/assets/font-awesome/css/font-awesome.min.css") 
+         "/assets/font-awesome/css/font-awesome.min.css")
       (page/include-js
          "/assets/jquery/jquery.min.js"
-         "/assets/bootstrap/js/bootstrap.min.js") 
+         "/assets/bootstrap/js/bootstrap.min.js")
       headitems]
     [:body content]))
 
@@ -48,14 +48,16 @@
       [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0"}]
       [:link {:rel "shortcut icon" :type "image/png" :href "/img/favicon.png"}]
       [:title (glossary :title)]
-      (page/include-css 
+      (page/include-css
          "/assets/bootstrap/css/bootstrap.min.css"
-         "/assets/font-awesome/css/font-awesome.min.css" 
+         "/assets/font-awesome/css/font-awesome.min.css"
          "/css/main.css")
       (page/include-js
          "/assets/jquery/jquery.min.js"
-         "/assets/bootstrap/js/bootstrap.min.js") 
-      (js-script (js-var "csrfToken" (js-quot csrf-token)))
+         "/assets/bootstrap/js/bootstrap.min.js")
+      (js-script
+        (js-var "context" (js-quot servlet-context))
+        (js-var "csrfToken" (js-quot csrf-token)))
       headitems]
     [:body
       [:div#navbar]

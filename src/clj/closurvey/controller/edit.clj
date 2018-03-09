@@ -33,6 +33,11 @@
     (if surveyno
       (-> (response/see-other (str "/edit/" surveyno)))
       (-> (response/internal-server-error "Internal error: Unable to add new document.")))))
+(defn save-action [{:keys [params] :as request}]
+  (let [{:keys [survey-info]} params]
+    (log/info "save survey-info: " survey-info " params: " params " request: " request)
+    (response/ok "okie")))
+
 (defn render-opener []
   (layout/render-hiccup
     view.edit/opener

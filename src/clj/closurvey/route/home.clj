@@ -9,8 +9,8 @@
 (defroutes home-routes
   (GET "/" [] (main/render))
   (POST "/add" [] (edit/add-action))
+  (POST "/save" [request] (edit/save-action request))
   (GET "/open" [] (edit/render-opener))
-  (GET "/edit" request (edit/render-editor request))
   (GET "/edit/:surveyno" [surveyno] (edit/render-editor surveyno))
   (GET "/docs" []
        (-> (response/ok (-> "docs/docs.md" io/resource slurp))

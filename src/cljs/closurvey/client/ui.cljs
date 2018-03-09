@@ -15,7 +15,7 @@
 
 (defn read-transit-state
   ([encoded-js-state]
-   (read-transit-state encoded-js-state nil)) 
+   (read-transit-state encoded-js-state nil))
   ([encoded-js-state state-keys]
    (let [transit-state (read-json (base64/decodeString encoded-js-state))]
       (if state-keys
@@ -23,7 +23,7 @@
         transit-state))))
 
 (defn anti-forgery-field [csrf-token]
-  [:input.__anti-forgery-token 
+  [:input.__anti-forgery-token
     {:name "__anti-forgery-token"
      :type :hidden
      :value csrf-token}])

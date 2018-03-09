@@ -14,7 +14,10 @@
 (defn render-hiccup [hiccup-fn params]
   (content-type
     (ok
-      (hiccup-fn (assoc params :csrf-token *anti-forgery-token*)))
+      (hiccup-fn
+        (assoc params
+           :csrf-token *anti-forgery-token*
+           :servlet-context *app-context*)))
     "text/html; charset=utf-8"))
 
 (defn render

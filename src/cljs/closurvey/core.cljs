@@ -4,6 +4,7 @@
     [closurvey.client.event :as event] 
     [reagent.core :as r]
     [closurvey.client.ui :as ui]
+    [closurvey.ajax :as appajax]
     [ajax.core :refer [GET POST]]))
 
 (def yes-no-option
@@ -83,6 +84,7 @@
       empty-question
       empty-custom-answer
       {:surveyname ""
+       :client-state {}
        :question-list []
        :question-index
         {:new-question (assoc new-question :index :new-question)}
@@ -90,6 +92,9 @@
         (map-with-key
           :option-text
           [yes-no-option agree-disagree-5-levels-option rating-5-levels-option test-multi-option text-area-option])})))
+
+(defn doc-from-state [s]
+  (dissoc s :client-state))
 
 (defn vswap
   "Swap items in a vector if indexes are in bounds."
@@ -123,7 +128,16 @@
       (assoc-in [:question-index question-id] question-info)
       (update :question-list conj question-id))))
 
-(defn open-or-edit-selector [state]
+;; TODO queuing and auto-save and status display and async stuff
+(defn save-doc! []
+  (let [doc (doc-from-state @state)]
+    (POST
+      "/save"
+      {:params {"survey-info" doc}
+       :handler #(swap! state assoc-in [:client-state :save-status] %)
+       :error-handler #(swap! state assoc-in [:client-state :save-status] (str %))})))
+
+(defn save-control-group [state]
   [:div.container
     [:div.row [:span.font-weight-bold "Edit a survey"]]
     [:div.row
@@ -136,10 +150,13 @@
          :on-change (event/assoc-with-js-value state :surveyname)}]
       [:input.mr-1
         {:type :button
-         :value "Save"}]
+         :value "Save"
+         :on-click #(save-doc!)}]
       [:input.mr-1
         {:type :button
          :value "Save and publish"}]]
+    [:div.row
+      [:p (str (get-in @state [:client-state :save-status]))]]
     [:div.row
       [:span "Properties..."]]])
 
@@ -408,7 +425,7 @@
   [:div.container
     [:li [:a {:href "/"} "Home"]]
     [:h1 "Survey Editor"]
-    [open-or-edit-selector state]
+    [save-control-group state]
     [:ul
       [:li "Edit a survey"
         [:ul
@@ -442,13 +459,7 @@
               [:li "Strongly disagree .. Strongly agree (5 levels)"]
               [:li "Free text"]]]]]]])
 
-(defn open-doc [surveyname] 
-  (POST "/survey/doc"
-        {:params 
-         {:surveyname surveyname} 
-         :handler 
-         #(js/alert %)}))
-;; -------------------------
+; -------------------------
 ;; Initialize app
 
 (defn mount-components []
@@ -457,9 +468,10 @@
 (defn load-transit! []
   (let [{:keys [survey-info flash-errors]} (ui/read-transit-state js/transitState)]
     (swap! state merge survey-info)
-    (reset! docstate @state)))
+    (reset! docstate (doc-from-state @state))))
 
 (defn init! []
+  (appajax/load-interceptors! js/context js/csrfToken)
   (mount-components)
   (load-transit!))
 
