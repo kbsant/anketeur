@@ -133,7 +133,7 @@
   (let [doc (doc-from-state @state)]
     (POST
       "/save"
-      {:params {"survey-info" doc}
+      {:params {:survey-info doc}
        :handler #(swap! state assoc-in [:client-state :save-status] %)
        :error-handler #(swap! state assoc-in [:client-state :save-status] (str %))})))
 
