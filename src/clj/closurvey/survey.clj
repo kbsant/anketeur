@@ -9,21 +9,20 @@
 (defn read-app-table [table-name]
   (fs/read-table (:app-data-dir env) table-name))
 
-(declare flush-table)
-
-;; Holder of state for store
-(defstate survey-table
-  :start (read-app-table "survey-table") 
-  :stop (flush-table survey-table))
-
 (defn view [table]
-  (some-> table :data deref)) 
+  (some-> table :data deref))
 
 (defn flush-table [table]
   (fs/write-table table))
 
+;; TODO try-catch and return nil in case of invalid string
 (defn as-id [s]
-  (java.util.UUID/fromString s))
+  (cond-> s (not (uuid? s)) java.util.UUID/fromString))
+
+;; Holder of state for store
+(defstate survey-table
+  :start (read-app-table "survey-table")
+  :stop (flush-table survey-table))
 
 ;; TODO caller should check if survey-info is nil, then retry
 (defn insert-survey [surveyname roles]
@@ -34,14 +33,15 @@
       survey-info)))
 
 (defn upsert-survey [survey-info]
-  (let [surveyno (or (:surveyno survey-info) (java.util.UUID/randomUUID))]
-    (swap! (:data survey-table) assoc surveyno survey-info)
-    (when (= surveyno (:surveyno survey-info))
-      survey-info)))
+  (let [surveyno (or (-> survey-info :surveyno as-id) (java.util.UUID/randomUUID))
+        uuid-survey-info (assoc survey-info :surveyno surveyno)]
+    (swap! (:data survey-table) assoc surveyno uuid-survey-info)
+    (when (= surveyno (:surveyno uuid-survey-info))
+      uuid-survey-info)))
 
 (defstate auth-table
-  :start (read-app-table "auth-table") 
-  :stop (fs/write-table auth-table))
+  :start (read-app-table "auth-table")
+  :stop (flush-table auth-table))
 
 (defn insert-auth [surveyname surveyno passwd]
   (when surveyno

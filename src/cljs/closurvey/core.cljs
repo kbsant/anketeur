@@ -134,6 +134,7 @@
     (POST
       "/save"
       {:params {:survey-info doc}
+       ;; TODO fade out after saving
        :handler #(swap! state assoc-in [:client-state :save-status] %)
        :error-handler #(swap! state assoc-in [:client-state :save-status] (str %))})))
 
@@ -156,6 +157,7 @@
         {:type :button
          :value "Save and publish"}]]
     [:div.row
+      ;; TODO fade out after setting 
       [:p (str (get-in @state [:client-state :save-status]))]]
     [:div.row
       [:span "Properties..."]]])

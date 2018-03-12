@@ -9,11 +9,11 @@
 ;; TODO direct object reference vulnerability - add session mapping and/or auth.
 
 ;; save a survey doc
-(defn save-doc! [{:keys [doc autosave?]}]
+(defn save-doc! [{:keys [survey-info autosave?]}]
   ;; consider using git as a backend for the doc data.
   ;; queue up and save intermittently if autosave.
   ;; attempt to flush if saved explicitly.
-  (survey/upsert-survey doc))
+  (survey/upsert-survey survey-info))
 
 ;; read a single doc
 (defn read-doc [surveyno]
@@ -33,10 +33,14 @@
     (if surveyno
       (-> (response/see-other (str "/edit/" surveyno)))
       (-> (response/internal-server-error "Internal error: Unable to add new document.")))))
+;; TODO sanitize/validate form data
 (defn save-action [{:keys [params] :as request}]
-  (let [{:keys [survey-info]} params]
+  (let [{:keys [survey-info]} params
+        save-status (save-doc! {:survey-info survey-info})]
     (log/info "save survey-info: " survey-info " params: " params " request: " request)
-    (response/ok "okie")))
+    (if save-status
+      (response/ok "Document saved.")
+      (response/internal-server-error "Internal error: unable to save document."))))
 
 (defn render-opener []
   (layout/render-hiccup
