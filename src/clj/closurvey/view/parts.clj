@@ -68,3 +68,16 @@
           [:noscript
             [:p "This application requires javascript, but it seems to be disabled. Please enable it and reload."]]]]
       content]))
+
+(defn spa-appbase [view-data init-state app-js]
+  (appbase
+    view-data
+    (js-transit-state
+      "transitState"
+      init-state)
+    (list
+      (page/include-js "/js/app.js")
+      [:script
+        {:type "text/javascript"}
+        (str app-js ";")])))
+

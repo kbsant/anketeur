@@ -39,6 +39,24 @@
     (when (= surveyno (:surveyno uuid-survey-info))
       uuid-survey-info)))
 
+;; save a survey doc
+(defn save-doc! [{:keys [survey-info autosave?]}]
+  ;; consider using git as a backend for the doc data.
+  ;; queue up and save intermittently if autosave.
+  ;; attempt to flush if saved explicitly.
+  (upsert-survey survey-info))
+
+;; read a single doc
+(defn read-doc [surveyno]
+  (-> survey-table
+      view
+      (get (as-id surveyno))))
+
+;; get a collection of docs
+;; TODO add query param filter
+(defn query-docs [query-params]
+  (view survey-table))
+
 (defstate auth-table
   :start (read-app-table "auth-table")
   :stop (flush-table auth-table))

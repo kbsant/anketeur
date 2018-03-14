@@ -8,24 +8,6 @@
 
 ;; TODO direct object reference vulnerability - add session mapping and/or auth.
 
-;; save a survey doc
-(defn save-doc! [{:keys [survey-info autosave?]}]
-  ;; consider using git as a backend for the doc data.
-  ;; queue up and save intermittently if autosave.
-  ;; attempt to flush if saved explicitly.
-  (survey/upsert-survey survey-info))
-
-;; read a single doc
-(defn read-doc [surveyno]
-  (-> survey/survey-table
-      survey/view
-      (get (survey/as-id surveyno))))
-
-;; get a collection of docs
-(defn query-docs [query-params]
-  (-> survey/survey-table
-      survey/view))
-
 (defn add-action []
   ;; create a new doc, select the new id and redirect to editor
   (let [doc (survey/insert-survey nil nil)
@@ -36,7 +18,7 @@
 ;; TODO sanitize/validate form data
 (defn save-action [{:keys [params] :as request}]
   (let [{:keys [survey-info]} params
-        save-status (save-doc! {:survey-info survey-info})]
+        save-status (survey/save-doc! {:survey-info survey-info})]
     (log/info "save survey-info: " survey-info " params: " params " request: " request)
     (if save-status
       (response/ok "Document saved.")
@@ -46,13 +28,13 @@
   (layout/render-hiccup
     view.edit/opener
     {:glossary {:title "Create or Edit a Survey"}
-     :doclist (->> (query-docs nil)
+     :doclist (->> (survey/query-docs nil)
                    vals
                    (into []))}))
 
 (defn render-editor [surveyno]
   ;; TODO get selected survey from session
-  (let [survey-info (read-doc surveyno)]
+  (let [survey-info (survey/read-doc surveyno)]
     (log/info "surveyno: " surveyno "survey-info: " survey-info)
     (layout/render-hiccup
       view.edit/editor

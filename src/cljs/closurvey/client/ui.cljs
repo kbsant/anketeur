@@ -27,3 +27,20 @@
     {:name "__anti-forgery-token"
      :type :hidden
      :value csrf-token}])
+
+(defn render-selector-row
+  [link-fn i {:keys [surveyname] :as survey-info}]
+  ^{:key i}
+  [:li
+    [:a
+      {:href (link-fn survey-info)}
+      (or surveyname [:span.label.label-default "(no name)"])]])
+
+(defn doc-selector [link-fn state]
+  (fn []
+    (let [doclist (:doclist @state)
+          row-renderer (partial render-selector-row link-fn)]
+      (when-not (empty? doclist)
+        [:ul
+          (map-indexed row-renderer doclist)]))))
+

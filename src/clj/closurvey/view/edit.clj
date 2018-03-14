@@ -3,18 +3,15 @@
     [closurvey.view.parts :as parts]
     [hiccup.page :as page]))
 
-(defn opener [{:keys [flash-errors doclist] :as data}]
-  (parts/appbase
-    data
-    (parts/js-transit-state 
-      "transitState"
-      {:flash-errors flash-errors
-       :doclist doclist})
-    (list
-      (page/include-js "/js/app.js") 
-      [:script 
-        {:type "text/javascript"}
-        "closurvey.app.init_opener();"])))
+(defn opener [data]
+  (let [init-state (merge
+                     (select-keys data [:flash-errors :doclist])
+                     {:headline "Survey Editor"
+                      :add-subhead "Create a Survey"
+                      :add-link "/add"
+                      :open-subhead "Edit a Survey"
+                      :open-link-base "/edit/"})]
+    (parts/spa-appbase data init-state "closurvey.app.init_opener();")))
 
 (defn editor [{:keys [survey-info flash-errors] :as data}]
   (parts/appbase
