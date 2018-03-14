@@ -14,4 +14,11 @@
                    vals
                    (into []))}))
 
+(defn render-responder [surveyno]
+  (let [survey-info (survey/read-doc surveyno)]
+    (log/info "surveyno: " surveyno "survey-info: " survey-info)
+    (layout/render-hiccup
+      view.answer/responder
+      {:survey-info survey-info
+       :glossary {:title "Survey"}})))
 

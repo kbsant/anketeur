@@ -12,8 +12,9 @@
   (POST "/add" [] (edit/add-action))
   (POST "/save" request (edit/save-action request))
   (GET "/answer" [] (answer/render-opener))
+  (GET "/answer/id/:surveyno" [surveyno] (answer/render-responder surveyno))
   (GET "/open" [] (edit/render-opener))
-  (GET "/edit/:surveyno" [surveyno] (edit/render-editor surveyno))
+  (GET "/edit/id/:surveyno" [surveyno] (edit/render-editor surveyno))
   (GET "/docs" []
        (-> (response/ok (-> "docs/docs.md" io/resource slurp))
            (response/header "Content-Type" "text/plain; charset=utf-8"))))

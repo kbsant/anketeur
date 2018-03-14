@@ -13,7 +13,6 @@
   (fn []
     (let [{:keys [headline add-subhead add-link open-subhead open-link-base]} @state]
       [:div.row
-        [:p (str "Hello: " (keys @state))]
         [:h1 headline]
         (when add-link
           [:div

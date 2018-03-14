@@ -41,4 +41,3 @@
       {:survey-info survey-info
        :glossary {:title "Survey Editor"}})))
 
-

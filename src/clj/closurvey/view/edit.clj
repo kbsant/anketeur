@@ -10,18 +10,18 @@
                       :add-subhead "Create a Survey"
                       :add-link "/add"
                       :open-subhead "Edit a Survey"
-                      :open-link-base "/edit/"})]
+                      :open-link-base "/edit/id/"})]
     (parts/spa-appbase data init-state "closurvey.app.init_opener();")))
 
 (defn editor [{:keys [survey-info flash-errors] :as data}]
   (parts/appbase
     data
-    (parts/js-transit-state 
+    (parts/js-transit-state
       "transitState"
       {:survey-info survey-info :flash-errors flash-errors})
     (list
-      (page/include-js "/js/app.js") 
-      [:script 
+      (page/include-js "/js/app.js")
+      [:script
         {:type "text/javascript"}
         "closurvey.app.init_edit();"])))
 
