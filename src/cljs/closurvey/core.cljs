@@ -472,7 +472,7 @@
     (swap! state merge survey-info)
     (reset! docstate (doc-from-state @state))))
 
-(defn init! []
+(defn ^:export init []
   (appajax/load-interceptors! js/context js/csrfToken)
   (mount-components)
   (load-transit!))

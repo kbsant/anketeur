@@ -11,7 +11,7 @@
                       :add-link "/add"
                       :open-subhead "Edit a Survey"
                       :open-link-base "/edit/id/"})]
-    (parts/spa-appbase data init-state "closurvey.app.init_opener();")))
+    (parts/spa-appbase data init-state "closurvey.opener.init();")))
 
 (defn editor [{:keys [survey-info flash-errors] :as data}]
   (parts/appbase
@@ -23,7 +23,7 @@
       (page/include-js "/js/app.js")
       [:script
         {:type "text/javascript"}
-        "closurvey.app.init_edit();"])))
+        "closurvey.core.init();"])))
 
 
 

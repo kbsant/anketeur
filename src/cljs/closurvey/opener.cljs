@@ -44,7 +44,7 @@
   (let [init-state (ui/read-transit-state js/transitState)]
     (swap! state merge init-state)))
 
-(defn init! []
+(defn ^:export init []
   (mount-components)
   (load-transit!))
 

@@ -9,7 +9,7 @@
                      {:headline "Respond to a Survey"
                       :open-subhead "Open"
                       :open-link-base "/answer/id/"})]
-    (parts/spa-appbase data init-state "closurvey.app.init_opener();")))
+    (parts/spa-appbase data init-state "closurvey.opener.init();")))
 
 (defn responder [{:keys [survey-info flash-errors] :as data}]
   (parts/appbase
@@ -21,6 +21,6 @@
       (page/include-js "/js/app.js")
       [:script
         {:type "text/javascript"}
-        "closurvey.app.init_responder();"])))
+        "closurvey.responder.init();"])))
 
 
