@@ -11,9 +11,11 @@
 
 (defn question-list [state]
   (fn []
-    (let [questions (form/question-list-view @state)
-          render-question (partial form/preview-question @state)]
+    (let [state-info @state
+          questions (form/question-list-view state-info)
+          render-question (partial form/render-form-question state state-info)]
       [:div.container
+        [:p (str state-info)]
         [:div.row
           [:span.font-weight-bold (str "Question List (" (count questions) ")")]]
         (when-not (empty? questions)
