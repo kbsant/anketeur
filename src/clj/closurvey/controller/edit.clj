@@ -13,7 +13,7 @@
   (let [doc (survey/insert-survey nil nil)
         surveyno (:surveyno doc)]
     (if surveyno
-      (-> (response/see-other (str "/edit/" surveyno)))
+      (-> (response/see-other (str "/edit/id/" surveyno)))
       (-> (response/internal-server-error "Internal error: Unable to add new document.")))))
 ;; TODO sanitize/validate form data
 (defn save-action [{:keys [params] :as request}]
@@ -28,6 +28,8 @@
   (layout/render-hiccup
     view.edit/opener
     {:glossary {:title "Create or Edit a Survey"}
+     :add-link "/add"
+     :open-link-base "/edit/id/"
      :doclist (->> (survey/query-docs nil)
                    vals
                    (into []))}))

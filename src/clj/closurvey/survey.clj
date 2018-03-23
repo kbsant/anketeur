@@ -35,16 +35,20 @@
 (defn as-id [s]
   (cond-> s (not (uuid? s)) java.util.UUID/fromString))
 
+;; read a single doc
+(defn read-table-entry [table surveyno]
+  (-> table
+      view
+      (get (as-id surveyno))))
+
 ;; Holder of state for store
 (defstate survey-table
   :start (read-app-table "survey-table")
   :stop (flush-table survey-table))
 
-;; read a single doc
+;; use a function because partial needs the table to be mounted first
 (defn read-doc [surveyno]
-  (-> survey-table
-      view
-      (get (as-id surveyno))))
+  (read-table-entry survey-table surveyno))
 
 ;; get a collection of docs
 ;; TODO add query param filter
@@ -77,6 +81,10 @@
   :start (read-app-table "answer-table")
   :stop (flush-table answer-table))
 
+;; use a function because partial needs the table to be mounted first
+(defn read-answers [surveyno]
+  (read-table-entry answer-table surveyno))
+
 (defn next-answer-counter!
   ([table surveyno formno]
    (or formno (next-answer-counter! table surveyno)))
@@ -95,7 +103,7 @@
 
 (defn save-answers! [surveyno {:keys [answers]}]
   (when surveyno
-    (update-answers! answer-table surveyno answers)))
+    (update-answers! answer-table (as-id surveyno) answers)))
 
 (defstate auth-table
   :start (read-app-table "auth-table")

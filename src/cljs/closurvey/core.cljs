@@ -406,6 +406,7 @@
           [:li "Customize multiple selection answers"]
           [:li "Customize named scale 1 (Least something*) to n (Most something*)"]
           [:li "Ranking of items -- drag and drop? move up/down?"]
+          [:li "Add drop-down to select an answer type to edit"]
           [:li "Don't edit predefined answer types"
             [:ul
               [:li "Yes / No"]

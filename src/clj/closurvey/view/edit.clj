@@ -5,12 +5,10 @@
 
 (defn opener [data]
   (let [init-state (merge
-                     (select-keys data [:flash-errors :doclist])
+                     (select-keys data [:glossary :flash-errors :doclist :add-link :open-link-base])
                      {:headline "Survey Editor"
                       :add-subhead "Create a Survey"
-                      :add-link "/add"
-                      :open-subhead "Edit a Survey"
-                      :open-link-base "/edit/id/"})]
+                      :open-subhead "Edit a Survey"})]
     (parts/spa-appbase data init-state "closurvey.opener.init();")))
 
 (defn editor [{:keys [survey-info flash-errors] :as data}]

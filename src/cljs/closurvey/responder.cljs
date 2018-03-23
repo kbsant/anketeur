@@ -27,7 +27,13 @@
           questions (form/question-list-view state-info)
           render-question (partial form/render-form-question state state-info)]
       [:div.container
-        [:p (str state-info)]
+        [:h1 (:surveyname state-info)]
+        [:ul
+          [:li "Add survey description"]
+          [:li "Add auto-save and display auto-save function."]
+          [:li "Add dedup number when a new survey is loaded"]
+          [:li "Add submit/mark as complete"]
+          [:li "See whether the survey can be resumed after session expiry/survives after back/refresh"]]
         [:div.row
           [:span.font-weight-bold (str "Question List (" (count questions) ")")]]
         (when-not (empty? questions)

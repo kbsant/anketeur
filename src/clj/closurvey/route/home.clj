@@ -2,6 +2,7 @@
   (:require
     [closurvey.controller.edit :as edit]
     [closurvey.controller.answer :as answer]
+    [closurvey.controller.result :as result]
     [closurvey.controller.main :as main]
     [compojure.core :refer [defroutes GET POST]]
     [ring.util.http-response :as response]
@@ -16,7 +17,6 @@
   (GET "/answer/id/:surveyno" [surveyno] (answer/render-responder surveyno))
   (GET "/open" [] (edit/render-opener))
   (GET "/edit/id/:surveyno" [surveyno] (edit/render-editor surveyno))
-  (GET "/docs" []
-       (-> (response/ok (-> "docs/docs.md" io/resource slurp))
-           (response/header "Content-Type" "text/plain; charset=utf-8"))))
+  (GET "/result" [] (result/render-opener))
+  (GET "/result/id/:surveyno" [surveyno] (result/render-result surveyno)))
 

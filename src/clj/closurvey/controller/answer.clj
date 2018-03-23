@@ -10,6 +10,7 @@
   (layout/render-hiccup
     view.answer/opener
     {:glossary {:title "Respond to a Survey"}
+     :open-link-base "/answer/id/"
      :doclist (->> (survey/query-docs nil)
                    vals
                    (into []))}))
