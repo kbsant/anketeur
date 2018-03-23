@@ -4,7 +4,23 @@
     [closurvey.filestore :as fs]
     [clojure.string :as str]
     [crypto.password.bcrypt :as password]
-    [mount.core :refer [defstate]]))
+    [mount.core :refer [defstate]]
+    [clj-time.format :as fmt]
+    [clj-time.core :as tm]))
+
+(def timestamp-formatter (fmt/formatter "yyyyMMddHHmmssSS"))
+
+(defn str-timestamp
+  "String representation of the current time"
+  []
+  (fmt/unparse timestamp-formatter (tm/now)))
+
+(defn next-counter [counter]
+  (let [max 1000]
+    (rem ((fnil inc 0) counter) max)))
+
+(defn counter-str [counter]
+   (format "%s%03d" (str-timestamp) counter))
 
 (defn read-app-table [table-name]
   (fs/read-table (:app-data-dir env) table-name))
@@ -24,6 +40,17 @@
   :start (read-app-table "survey-table")
   :stop (flush-table survey-table))
 
+;; read a single doc
+(defn read-doc [surveyno]
+  (-> survey-table
+      view
+      (get (as-id surveyno))))
+
+;; get a collection of docs
+;; TODO add query param filter
+(defn query-docs [query-params]
+  (view survey-table))
+
 ;; TODO caller should check if survey-info is nil, then retry
 (defn insert-survey [surveyname roles]
   (let [surveyno (java.util.UUID/randomUUID)
@@ -40,22 +67,35 @@
       uuid-survey-info)))
 
 ;; save a survey doc
-(defn save-doc! [{:keys [survey-info autosave?]}]
+(defn save-survey! [{:keys [survey-info autosave?]}]
   ;; consider using git as a backend for the doc data.
   ;; queue up and save intermittently if autosave.
   ;; attempt to flush if saved explicitly.
   (upsert-survey survey-info))
 
-;; read a single doc
-(defn read-doc [surveyno]
-  (-> survey-table
-      view
-      (get (as-id surveyno))))
+(defstate answer-table
+  :start (read-app-table "answer-table")
+  :stop (flush-table answer-table))
 
-;; get a collection of docs
-;; TODO add query param filter
-(defn query-docs [query-params]
-  (view survey-table))
+(defn next-answer-counter!
+  ([table surveyno formno]
+   (or formno (next-answer-counter! table surveyno)))
+  ([table surveyno]
+   (let [keyvec [:form-counter surveyno]
+         result (swap! (:data table) update-in keyvec next-counter)
+         counter (get-in result keyvec)]
+      (counter-str counter))))
+
+(defn update-answers! [table surveyno {:keys [formno] :as answers}]
+  (let [upsert-formno (next-answer-counter! table surveyno formno)
+        answers-with-formno (assoc answers :formno upsert-formno)]
+    (when upsert-formno
+      (swap! (:data table) assoc-in [surveyno upsert-formno] answers-with-formno)
+      upsert-formno)))
+
+(defn save-answers! [surveyno {:keys [answers]}]
+  (when surveyno
+    (update-answers! answer-table surveyno answers)))
 
 (defstate auth-table
   :start (read-app-table "auth-table")

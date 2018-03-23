@@ -22,3 +22,12 @@
       {:survey-info survey-info
        :glossary {:title "Survey"}})))
 
+;; TODO sanitize/validate form data
+(defn answer-action [{:keys [params] :as request}]
+  (let [{:keys [surveyno answers]} params
+        save-status (survey/save-answers! surveyno {:answers answers})]
+    (log/info "save answers: " answers " params: " params " request: " request)
+    (if save-status
+      (response/ok "Form saved.")
+      (response/internal-server-error "Internal error: unable to save form."))))
+

@@ -18,7 +18,7 @@
 ;; TODO sanitize/validate form data
 (defn save-action [{:keys [params] :as request}]
   (let [{:keys [survey-info]} params
-        save-status (survey/save-doc! {:survey-info survey-info})]
+        save-status (survey/save-survey! {:survey-info survey-info})]
     (log/info "save survey-info: " survey-info " params: " params " request: " request)
     (if save-status
       (response/ok "Document saved.")
