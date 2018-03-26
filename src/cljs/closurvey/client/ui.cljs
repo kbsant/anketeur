@@ -36,11 +36,18 @@
       {:href (link-fn survey-info)}
       (or surveyname [:span.label.label-default "(no name)"])]])
 
-(defn doc-selector [link-fn state]
-  (fn []
-    (let [doclist (:doclist @state)
-          row-renderer (partial render-selector-row link-fn)]
-      (when-not (empty? doclist)
-        [:ul
-          (map-indexed row-renderer doclist)]))))
+(defn doc-selector [link-fn {:keys [doclist]}]
+  (let [row-renderer (partial render-selector-row link-fn)]
+    (when-not (empty? doclist)
+      [:ul
+        (map-indexed row-renderer doclist)])))
+
+(defn errors-div [errors-key state]
+  (when-let [errors (get @state errors-key)]
+    [:div
+      (->> errors
+        (map-indexed
+          (fn [i error]
+            ^{:key i}
+            [:p.text-danger error])))]))
 

@@ -7,13 +7,17 @@
     [ring.util.http-response :as response]))
 
 (defn render-opener []
-  (layout/render-hiccup
-    view.answer/opener
-    {:glossary {:title "Respond to a Survey"}
-     :open-link-base "/answer/id/"
-     :doclist (->> (survey/query-docs nil)
+  (let [doclist (->> (survey/query-docs nil)
                    vals
-                   (into []))}))
+                   (into []))
+        errors (when (empty? doclist)
+                  ["No documents found. Please create a new document."])]
+    (layout/render-hiccup
+      view.answer/opener
+      {:glossary {:title "Respond to a Survey"}
+       :flash-errors errors
+       :open-link-base "/answer/id/"
+       :doclist doclist})))
 
 (defn render-responder [surveyno]
   (let [survey-info (survey/read-doc surveyno)]

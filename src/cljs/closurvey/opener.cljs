@@ -30,11 +30,13 @@
                  :value "Create new"}]]])
         [:ul
           [:li open-subhead]]
-        [(partial ui/doc-selector #(str open-link-base (:surveyno %))) state]])))
+        (when (nil? add-link)
+          [ui/errors-div :flash-errors state])
+        (ui/doc-selector #(str open-link-base (:surveyno %)) @state)])))
 
 (defn home-page []
   [:div.container
-    [:li [:a {:href "/"} "Home"]]
+    [:ul [:li [:a {:href "/"} "Home"]]]
     [doc-opener state]])
 
 (defn mount-components []
