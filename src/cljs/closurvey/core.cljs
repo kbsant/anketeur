@@ -3,6 +3,7 @@
     [clojure.string :as string]
     [closurvey.client.event :as event] 
     [reagent.core :as r]
+    [closurvey.model :as model]
     [closurvey.client.surveyform :as form]
     [closurvey.client.ui :as ui]
     [closurvey.ajax :as appajax]
@@ -87,7 +88,7 @@
       {:surveyname ""
        :client-state {}
        :question-list []
-       :question-index
+       :question-map
         {:new-question (assoc new-question :index :new-question)}
        :answer-types
         (map-with-key
@@ -104,24 +105,6 @@
     (let [e1 (v i1), e2 (v i2)]
       (assoc v i1 e2 i2 e1))
     v))
-
-(defn next-question-id [question-index]
-  (->> question-index
-       keys
-       (filter number?)
-       (concat [0])
-       (apply max)
-       inc))
-
-(defn add-question
-  "Add a question to both the question index and list. 
-  To update the state, use this function with swap! ." 
-  [state-info question]
-  (let [question-id (next-question-id (:question-index state-info))
-        question-info (assoc question :index question-id)]
-    (-> state-info
-      (assoc-in [:question-index question-id] question-info)
-      (update :question-list conj question-id))))
 
 ;; TODO queuing and auto-save and status display and async stuff
 (defn save-doc! []
@@ -206,7 +189,7 @@
       [:input {:type :button
                :value "Add"
                :on-click #(when-let [q (build-current-question @state)]
-                            (swap! state add-question q)
+                            (swap! state model/add-question q)
                             (swap! state merge empty-question))}]]])
 
 (defn edit-question
@@ -229,12 +212,12 @@
          :placeholder "Question"
          :on-change (event/assoc-in-with-js-value
                       state
-                      [:question-index index :question-text])}]
+                      [:question-map index :question-text])}]
       [:select.mr-1
         {:value answer-type
          :on-change (event/assoc-in-with-js-value
                       state
-                      [:question-index index :answer-type])}
+                      [:question-map index :answer-type])}
         (render-select-options (:answer-types @state))]
       [:label.mr-1
         [:input.mr-1
@@ -243,7 +226,7 @@
            :value required
            :on-change #(swap!
                         state update-in
-                        [:question-index index :required]
+                        [:question-map index :required]
                         not)}]
         "Require an answer"]
       [:label.mr-1
@@ -253,7 +236,7 @@
            :value allow-na
            :on-change #(swap!
                         state update-in
-                        [:question-index index :allow-na]
+                        [:question-map index :allow-na]
                         not)}]
         "Provide Not Applicable"]]])
 
@@ -355,7 +338,7 @@
 
 (defn question-list [state]
   (fn []
-    (let [questions (form/question-list-view @state)
+    (let [questions (model/question-list-view @state)
           render-question (if (:question-edit-mode @state) 
                               (partial edit-question state)
                               (partial form/preview-question @state))]

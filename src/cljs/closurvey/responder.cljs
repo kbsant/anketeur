@@ -2,6 +2,7 @@
   (:require
     [clojure.string :as string]
     [closurvey.client.event :as event]
+    [closurvey.model :as model]
     [closurvey.client.surveyform :as form]
     [closurvey.client.ui :as ui]
     [reagent.core :as r]
@@ -24,7 +25,7 @@
 (defn question-list [state]
   (fn []
     (let [state-info @state
-          questions (form/question-list-view state-info)
+          questions (model/question-list-view state-info)
           render-question (partial form/render-form-question state state-info)]
       [:div.container
         [:h1 (:surveyname state-info)]

@@ -2,6 +2,7 @@
   (:require
     [clojure.tools.logging :as log]
     [closurvey.layout :as layout]
+    [closurvey.model :as model]
     [closurvey.survey :as survey]
     [closurvey.view.result :as view.result]
     [ring.util.http-response :as response]))
@@ -21,9 +22,9 @@
 
 (defn render-result [surveyno]
   (let [survey-info (survey/read-doc surveyno)
-        question-list (:question-list survey-info)
+        question-list (model/question-list-view survey-info)
         answers (survey/read-answers surveyno)]
-    (log/info "surveyno: " surveyno "answers: " answers "survey-info: " survey-info)
+    (log/info "surveyno: " surveyno "questions:" question-list "answers: " answers "survey-info: " survey-info)
     (layout/render-hiccup
       view.result/result-page
       {:survey-info survey-info

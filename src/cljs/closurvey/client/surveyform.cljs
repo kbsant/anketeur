@@ -3,12 +3,6 @@
     [clojure.string :as string]
     [closurvey.client.event :as event])) 
 
-(defn question-list-view
-  "question-index holds the indexed data, while the order is determined by question-list.
-  To obtain a list view of the questions, de-reference the index using the question list." 
-  [state-info]
-  (map (:question-index state-info) (:question-list state-info)))
-
 (defn change-handler [state index ev]
   (swap! state assoc-in [:answers index] (event/target-value ev)))
 
