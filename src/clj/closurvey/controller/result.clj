@@ -23,12 +23,17 @@
 (defn render-result [surveyno]
   (let [survey-info (survey/read-doc surveyno)
         question-list (model/question-list-view survey-info)
-        answers (survey/read-answers surveyno)]
-    (log/info "surveyno: " surveyno "questions:" question-list "answers: " answers "survey-info: " survey-info)
+        answer-types (:answer-types survey-info)
+        answers (survey/read-answers surveyno)
+        question-ids (range (count question-list))
+        question-answer-agg (->> question-list
+                                (model/questions-with-answer-keys answer-types)
+                                (model/questions-with-coll-answers answers)
+                                (model/questions-with-agg-answers))]
+    (log/info "surveyno: " surveyno "qa-agg:" question-answer-agg)
     (layout/render-hiccup
       view.result/result-page
-      {:survey-info survey-info
-       :question-list question-list
-       :answers answers
+      {:survey-info (select-keys survey-info [:surveyno :surveyname])
+       :question-answer-agg question-answer-agg
        :glossary {:title "Survey Results"}})))
 

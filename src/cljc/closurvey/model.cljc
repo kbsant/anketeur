@@ -22,3 +22,30 @@
       (assoc-in [:question-map question-id] question-info)
       (update :question-list conj question-id))))
 
+(defn add-coll-answers [answers index question-info]
+  (let [coll-answers (map #(get % (str index)) answers)]
+    (assoc question-info :coll-answers coll-answers)))
+
+(defn questions-with-coll-answers [answers question-list]
+  (let [coll-fn (partial add-coll-answers (vals answers))]
+    (map-indexed coll-fn question-list)))
+
+(defn add-answer-keys [answer-types question-info]
+  (let [answer-keys (get-in answer-types [(:answer-type question-info) :params :values])]
+    (assoc question-info :answer-keys answer-keys)))
+
+(defn questions-with-answer-keys [answer-types question-list]
+  (let [add-keys-fn (partial add-answer-keys answer-types)]
+    (map add-keys-fn question-list)))
+
+(defn agg-values [values key]
+  [key (count (filter #{key} values))])
+
+(defn add-answer-agg [{:keys [answer-keys coll-answers] :as question-info}]
+  (let [agg-fn (partial agg-values coll-answers)
+        answer-agg (into {} (map agg-fn answer-keys))]
+    (assoc question-info :answer-agg answer-agg)))
+
+(defn questions-with-agg-answers [question-list]
+    (map add-answer-agg question-list))
+

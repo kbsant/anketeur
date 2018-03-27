@@ -15,7 +15,9 @@
     data
     (parts/js-transit-state
       "transitState"
-      (select-keys data [:question-list :answers :survey-info :flash-errors]))
+      (select-keys
+        data
+        [:question-answer-agg :flash-errors]))
     (list
       (page/include-js "/js/app.js")
       [:script
