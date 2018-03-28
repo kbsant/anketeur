@@ -75,7 +75,9 @@
   ;; consider using git as a backend for the doc data.
   ;; queue up and save intermittently if autosave.
   ;; attempt to flush if saved explicitly.
-  (upsert-survey survey-info))
+  (let [upserted-survey-info (upsert-survey survey-info)]
+    (flush-table survey-table)
+    upserted-survey-info))
 
 (defstate answer-table
   :start (read-app-table "answer-table")
@@ -101,9 +103,12 @@
       (swap! (:data table) assoc-in [surveyno upsert-formno] answers-with-formno)
       upsert-formno)))
 
+;; TODO decide where to queue write operations
 (defn save-answers! [surveyno {:keys [answers]}]
   (when surveyno
-    (update-answers! answer-table (as-id surveyno) answers)))
+    (let [formno (update-answers! answer-table (as-id surveyno) answers)]
+      (flush-table answer-table)
+      formno)))
 
 (defstate auth-table
   :start (read-app-table "auth-table")
