@@ -26,9 +26,10 @@
   (fn []
     (let [state-info @state
           questions (model/question-list-view state-info)
-          render-question (partial form/render-form-question state state-info)]
+          render-question (partial form/render-form-question state state-info "response")]
       [:div.container
         [:h1 (:surveyname state-info)]
+        [:p (-> state-info :answers str)]
         [:ul
           [:li "Add survey description"]
           [:li "Add auto-save and display auto-save function."]
@@ -38,7 +39,8 @@
         [:div.row
           [:span.font-weight-bold (str "Question List (" (count questions) ")")]]
         (when-not (empty? questions)
-          (map-indexed render-question questions))])))
+          [:form#response
+            (map-indexed render-question questions)])])))
 
 (defn home-page []
   [:div.container

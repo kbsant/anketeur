@@ -22,6 +22,18 @@
         (select-keys transit-state state-keys)
         transit-state))))
 
+(defn element-by-id [id]
+  (.getElementById js/document id))
+
+(defn form-element-value [form name]
+  (let [parent (-> form .-elements (.namedItem name))
+        length (or (some-> (.-length parent) (> 1)) 0)
+        parent-seq (array-seq parent)
+        child-type (when (> length 0) (.-type (first parent-seq)))]
+    (if (= "checkbox" child-type)
+      (->> parent-seq (filter #(.-checked %)) (map #(.-value %)))
+      (.-value parent))))
+
 (defn anti-forgery-field [csrf-token]
   [:input.__anti-forgery-token
     {:name "__anti-forgery-token"

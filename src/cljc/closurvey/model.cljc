@@ -39,7 +39,7 @@
     (map add-keys-fn question-list)))
 
 (defn agg-values [values key]
-  [key (count (filter #{key} values))])
+  [key (count (filter #{key} (flatten values)))])
 
 (defn add-answer-agg [{:keys [answer-keys coll-answers] :as question-info}]
   (let [agg-fn (partial agg-values coll-answers)

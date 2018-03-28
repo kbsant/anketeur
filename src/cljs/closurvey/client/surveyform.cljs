@@ -1,10 +1,13 @@
 (ns closurvey.client.surveyform
   (:require
     [clojure.string :as string]
-    [closurvey.client.event :as event])) 
+    [closurvey.client.event :as event]
+    [closurvey.client.ui :as ui]))
 
-(defn change-handler [state index ev]
-  (swap! state assoc-in [:answers index] (event/target-value ev)))
+(defn change-handler [state form-id index ev]
+  (let [form (ui/element-by-id form-id)
+        value (ui/form-element-value form index)]
+    (swap! state assoc-in [:answers index] value)))
 
 (defn with-change-handler [m handler index]
   (cond-> m
@@ -15,7 +18,7 @@
   [radio-or-checkbox {:keys [values]}]
   (fn [index {:keys [allow-na]} handler]
     (let [input-name (str index)]
-      [:form.inline
+      [:div.row
         (map-indexed
           (fn [i input-value]
             ^{:key i}
@@ -41,7 +44,7 @@
   [_]
   (fn [index _ handler]
     (let [input-name (str index)]
-      [:form.inline
+      [:div.row
         [:textarea
           (with-change-handler
             {:name input-name}
@@ -75,8 +78,8 @@
 
 ;; pass the state-ref and state-info to avoid de-referencing a ratom,
 ;; since reagent deref has side-effects that aren't needed in this call.
-(defn render-form-question [state-ref state-info index question]
-  (render-question state-info index question (partial change-handler state-ref)))
+(defn render-form-question [state-ref state-info form-id index question]
+  (render-question state-info index question (partial change-handler state-ref form-id)))
 
 (defn preview-question [state-info index question]
   (render-question state-info index question nil))
