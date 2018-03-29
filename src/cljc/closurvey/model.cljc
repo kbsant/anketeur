@@ -10,7 +10,8 @@
 (defn next-question-id [question-map]
   (->> question-map
        keys
-       count))
+       count
+       str))
 
 (defn add-question
   "Add a question to both the question index and list.
