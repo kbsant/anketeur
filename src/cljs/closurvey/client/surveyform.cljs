@@ -18,7 +18,7 @@
   [radio-or-checkbox {:keys [values]}]
   (fn [index {:keys [allow-na]} handler]
     (let [input-name (str index)]
-      [:div.row
+      [:div.row.ml-1.pl-1
         (map-indexed
           (fn [i input-value]
             ^{:key i}
@@ -44,7 +44,7 @@
   [_]
   (fn [index _ handler]
     (let [input-name (str index)]
-      [:div.row
+      [:div.row.ml-1.pl-1
         [:textarea
           (with-change-handler
             {:name input-name}
@@ -64,13 +64,13 @@
 
 (defn render-question
   [state-info
-   index
-   {:keys [question-text answer-type required allow-na] :as question}
+   pos
+   {:keys [index question-text answer-type required allow-na] :as question}
    handler]
   ^{:key index}
   [:div.row
       [:p
-        [:span.mr-1.font-weight-bold (str (inc index))]
+        [:span.mr-1.font-weight-bold (str (inc pos))]
         question-text
         (when required [:span.alert.alert-info.ml-1.pl-1.py-0.my-0.small "* Required"])]
       (when-let [answer-renderer (render-answer-type state-info answer-type)]
@@ -78,9 +78,9 @@
 
 ;; pass the state-ref and state-info to avoid de-referencing a ratom,
 ;; since reagent deref has side-effects that aren't needed in this call.
-(defn render-form-question [state-ref state-info form-id index question]
-  (render-question state-info index question (partial change-handler state-ref form-id)))
+(defn render-form-question [state-ref state-info form-id pos question]
+  (render-question state-info pos question (partial change-handler state-ref form-id)))
 
-(defn preview-question [state-info index question]
-  (render-question state-info index question nil))
+(defn preview-question [state-info pos question]
+  (render-question state-info pos question nil))
 

@@ -193,19 +193,19 @@
                             (swap! state merge empty-question))}]]])
 
 (defn edit-question
-  [state i {:keys [question-text answer-type required allow-na index] :as question}]
-  ^{:key i}
+  [state pos {:keys [question-text answer-type required allow-na index] :as question}]
+  ^{:key index}
   [:div.container
     [:div.row
       [:input.mr-1
        {:type :button
         :value "↑"
-        :on-click #(swap! state update :question-list vswap (dec i) i)}]
+        :on-click #(swap! state update :question-list vswap (dec pos) pos)}]
       [:input.mr-1
        {:type :button
         :value "↓"
-        :on-click #(swap! state update :question-list vswap i (inc i))}]
-      [:span.mr-1.font-weight-bold (str (inc i))]
+        :on-click #(swap! state update :question-list vswap pos (inc pos))}]
+      [:span.mr-1.font-weight-bold (str (inc pos))]
       [:input.mr-1
         {:type :text
          :value question-text

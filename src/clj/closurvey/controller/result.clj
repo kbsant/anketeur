@@ -25,7 +25,6 @@
         question-list (model/question-list-view survey-info)
         answer-types (:answer-types survey-info)
         answers (survey/read-answers surveyno)
-        question-ids (range (count question-list))
         question-answer-agg (->> question-list
                                 (model/questions-with-answer-keys answer-types)
                                 (model/questions-with-coll-answers answers)
