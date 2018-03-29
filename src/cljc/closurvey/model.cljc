@@ -32,8 +32,9 @@
     (map coll-fn question-list)))
 
 (defn add-answer-keys [answer-types question-info]
-  (let [answer-keys (get-in answer-types [(:answer-type question-info) :params :values])]
-    (assoc question-info :answer-keys answer-keys)))
+  (let [answer-keys (get-in answer-types [(:answer-type question-info) :params :values])
+        template (get-in answer-types [(:answer-type question-info) :template])]
+    (assoc question-info :answer-keys answer-keys :template template)))
 
 (defn questions-with-answer-keys [answer-types question-list]
   (let [add-keys-fn (partial add-answer-keys answer-types)]
