@@ -39,12 +39,17 @@
             answer-keys)]])])
 
 (defn home-page []
-  [:div.container
-    [:ul [:li [:a {:href "/"} "Home"]]]
-    [:h1 "Survey results"]
-    [:p "Work in progress, dumping raw data"]
-    [:p (str @state)]
-    (map-indexed render-item (:question-answer-agg @state))])
+  (let [{:keys [survey-info export-link-base question-answer-agg] :as state-info} @state
+                surveyno (:surveyno survey-info)]
+    [:div.container
+      [:ul [:li [:a {:href "/"} "Home"]]]
+      [:h1 "Survey results"]
+      [:p "Export to"
+        [:a.ml-1 {:href (str export-link-base "JSON/id/" surveyno)} "JSON"]
+        [:a.ml-1 {:href (str export-link-base "CSV/id/" surveyno)} "CSV"]
+        [:a.ml-1 {:href (str export-link-base "EDN/id/" surveyno)} "EDN"]]
+      [:p (str state-info)]
+      (map-indexed render-item question-answer-agg)]))
 
 (defn mount-components []
   (r/render [home-page] (.getElementById js/document "app")))

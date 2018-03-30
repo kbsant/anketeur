@@ -1,5 +1,6 @@
 (ns closurvey.controller.result
   (:require
+    [cheshire.core :as json]
     [clojure.tools.logging :as log]
     [closurvey.layout :as layout]
     [closurvey.model :as model]
@@ -20,19 +21,34 @@
        :open-link-base "/result/id/"
        :doclist doclist})))
 
-(defn render-result [surveyno]
+(defn read-aggregate-result [surveyno]
   (let [survey-info (survey/read-doc surveyno)
-        question-list (model/question-list-view survey-info)
-        answer-types (:answer-types survey-info)
-        answers (survey/read-answers surveyno)
-        question-answer-agg (->> question-list
-                                (model/questions-with-answer-keys answer-types)
-                                (model/questions-with-coll-answers answers)
-                                (model/questions-with-agg-answers))]
-    (log/info "surveyno: " surveyno "qa-agg:" question-answer-agg)
+        answers (survey/read-answers surveyno)]
+     (model/survey-result-agg survey-info answers)))
+
+(defn render-result [surveyno]
+  (let [result-agg (read-aggregate-result surveyno)]
+    (log/info "surveyno: " surveyno "result-agg" result-agg)
     (layout/render-hiccup
       view.result/result-page
-      {:survey-info (select-keys survey-info [:surveyno :surveyname])
-       :question-answer-agg question-answer-agg
-       :glossary {:title "Survey Results"}})))
+      (merge
+        result-agg
+        {:export-link-base "/result/export/"
+         :glossary {:title "Survey Results"}}))))
 
+(defmulti export-format (fn [format _] format))
+
+(defmethod export-format "CSV" [_ data]
+  (json/generate-string data {:pretty true}))
+
+(defmethod export-format "JSON" [_ data]
+  (json/generate-string data {:pretty true}))
+
+(defmethod export-format "EDN" [_ data]
+  (clojure.pprint/write data :stream nil))
+
+(defn export [format surveyno]
+  (let [result-agg (read-aggregate-result surveyno)]
+    ;;    export-fn (get {"CSV" export-csv, "JSON" export-json, "EDN" export-edn})]
+    (log/info "export survey: " surveyno "format: " format)
+    (export-format format result-agg)))

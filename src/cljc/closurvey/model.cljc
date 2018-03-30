@@ -51,3 +51,13 @@
 (defn questions-with-agg-answers [question-list]
     (map add-answer-agg question-list))
 
+(defn survey-result-agg [survey-info answers]
+  (let [question-list (question-list-view survey-info)
+        answer-types (:answer-types survey-info)
+        aggregated  (->> question-list
+                      (questions-with-answer-keys answer-types)
+                      (questions-with-coll-answers answers)
+                      (questions-with-agg-answers))]
+    {:survey-info (select-keys survey-info [:surveyno :surveyname])
+     :question-answer-agg aggregated}))
+

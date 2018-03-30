@@ -13,11 +13,7 @@
 (defn result-page [{:keys [survey-info flash-errors] :as data}]
   (parts/appbase
     data
-    (parts/js-transit-state
-      "transitState"
-      (select-keys
-        data
-        [:question-answer-agg :flash-errors]))
+    (parts/js-transit-state "transitState" data)
     (list
       (page/include-js "/js/app.js")
       [:script
