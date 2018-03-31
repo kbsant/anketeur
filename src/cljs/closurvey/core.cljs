@@ -31,17 +31,9 @@
    :template :radio
    :params {:values ["1" "2" "3" "4" "5"]}})
 
-(def test-multi-option
-  {:option-text "Test multi"
-   :index 3
-   :template :checkbox
-   :predefined true
-   :params {:values ["Eggs" "Poultry" "Fish" "Shellfish" "Crustaceans"
-                     "Meat" "Dairy" "Others"]}})
-
 (def text-area-option
   {:option-text "Free text"
-   :index 4
+   :index 3
    :predefined true
    :template :text-area})
 
@@ -93,10 +85,10 @@
        :answer-types
         (map-with-key
           :option-text
-          [yes-no-option agree-disagree-5-levels-option rating-5-levels-option test-multi-option text-area-option])})))
+          [yes-no-option agree-disagree-5-levels-option rating-5-levels-option text-area-option])})))
 
-(defn doc-from-state [s]
-  (dissoc s :client-state))
+(defn doc-from-state [state-info]
+  (dissoc state-info :client-state))
 
 (defn vswap
   "Swap items in a vector if indexes are in bounds."
@@ -137,6 +129,11 @@
       [:p (str (get-in @state [:client-state :save-status]))]]
     [:div.row
       [:span "Properties..."]]])
+
+(defn import-export [state]
+  (let [{:keys [client-state surveyno]} @state
+        export-link-base (:export-link-base client-state)]
+    [:p "Export " [:a {:href (str export-link-base "EDN/id/" surveyno)} "EDN"] (str @state)]))
 
 (defn build-current-question
   [{:keys [current-question-text current-answer-type current-required current-allow-na]}]
@@ -362,10 +359,12 @@
     [:li [:a {:href "/"} "Home"]]
     [:h1 "Survey Editor"]
     [save-control-group state]
+    [import-export state]
     [:ul
       [:li "Edit a survey"
         [:ul
           [:li "auto-save draft"]
+          [:li "import/export EDN"]
           [:li "publish questionnaire"]]]]
     [question-list state]
     [:ul
@@ -377,6 +376,9 @@
     [:ul
       [:li "Add/edit a question"
         [:ul
+          [:li "Option whether or not to display the item number"]
+          [:li "Allow non-question item types like section names and comments."]
+          [:li "Indent an item and optionally show bullet points instead of item numbers"]
           [:li "Set the type of answer to the question"]
           [:li "Set whether the question requires an answer or not"]
           [:li "Provide Not Applicable as an answer"]
@@ -403,8 +405,11 @@
   (r/render [home-page] (.getElementById js/document "app")))
 
 (defn load-transit! []
-  (let [{:keys [survey-info flash-errors]} (ui/read-transit-state js/transitState)]
+  (let [init-state (ui/read-transit-state js/transitState)
+        survey-info (:survey-info init-state)
+        init-client-state (select-keys init-state [:export-link-base :flash-errors])]
     (swap! state merge survey-info)
+    (swap! state update :client-state merge init-client-state)
     (reset! docstate (doc-from-state @state))))
 
 (defn ^:export init []

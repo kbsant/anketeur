@@ -41,5 +41,6 @@
     (layout/render-hiccup
       view.edit/editor
       {:survey-info survey-info
+       :export-link-base "/edit/export/"
        :glossary {:title "Survey Editor"}})))
 

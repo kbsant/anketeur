@@ -11,12 +11,12 @@
                       :open-subhead "Edit a Survey"})]
     (parts/spa-appbase data init-state "closurvey.opener.init();")))
 
-(defn editor [{:keys [survey-info flash-errors] :as data}]
+(defn editor [data]
   (parts/appbase
     data
     (parts/js-transit-state
       "transitState"
-      {:survey-info survey-info :flash-errors flash-errors})
+      (select-keys data [:survey-info :export-link-base :flash-errors]))
     (list
       (page/include-js "/js/app.js")
       [:script
