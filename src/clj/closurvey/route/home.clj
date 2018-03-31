@@ -17,6 +17,7 @@
   (GET "/answer/id/:surveyno" [surveyno] (answer/render-responder surveyno))
   (GET "/open" [] (edit/render-opener))
   (GET "/edit/id/:surveyno" [surveyno] (edit/render-editor surveyno))
+  (GET "/edit/export/EDN/id/:surveyno" [surveyno] (edit/export surveyno))
   (GET "/result" [] (result/render-opener))
   (GET "/result/id/:surveyno" [surveyno] (result/render-result surveyno))
   (GET "/result/id/:surveyno" [surveyno] (result/render-result surveyno))

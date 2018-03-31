@@ -99,41 +99,47 @@
     v))
 
 ;; TODO queuing and auto-save and status display and async stuff
-(defn save-doc! []
+(defn save-doc!
+ ([]
+  (save-doc! nil))
+ ([handler-fn]
   (let [doc (doc-from-state @state)]
     (POST
       "/save"
       {:params {:survey-info doc}
        ;; TODO fade out after saving
-       :handler #(swap! state assoc-in [:client-state :save-status] %)
-       :error-handler #(swap! state assoc-in [:client-state :save-status] (str %))})))
+       :handler #(do (swap! state assoc-in [:client-state :save-status] %)
+                     (when handler-fn (handler-fn)))
+       :error-handler #(swap! state assoc-in [:client-state :save-status] (str %))}))))
+
+(defn save-and-export! [uri]
+  (save-doc! #(.open js/window uri)))
 
 (defn save-control-group [state]
-  [:div.container
-    [:div.row [:span.font-weight-bold "Edit a survey"]]
-    [:div.row
-      [:input.mr-1
-        {:type :text
-         :value (:surveyname @state)
-         :placeholder "Survey name"
-         :on-change (event/assoc-with-js-value state :surveyname)}]
-      [:input.mr-1
-        {:type :button
-         :value "Save"
-         :on-click #(save-doc!)}]
-      [:input.mr-1
-        {:type :button
-         :value "Save and publish"}]]
-    [:div.row
-      ;; TODO fade out after setting 
-      [:p (str (get-in @state [:client-state :save-status]))]]
-    [:div.row
-      [:span "Properties..."]]])
-
-(defn import-export [state]
-  (let [{:keys [client-state surveyno]} @state
-        export-link-base (:export-link-base client-state)]
-    [:p "Export " [:a {:href (str export-link-base "EDN/id/" surveyno)} "EDN"] (str @state)]))
+  (let [{:keys [client-state surveyname surveyno]} @state
+        {:keys [export-link-base save-status]} client-state
+        uri (str export-link-base "EDN/id/" surveyno)]
+    [:div.container
+      [:div.row [:span.font-weight-bold "Edit a survey"]]
+      [:div.row
+        [:input.mr-1
+          {:type :text
+           :value surveyname
+           :placeholder "Survey name"
+           :on-change (event/assoc-with-js-value state :surveyname)}]
+        [:input.mr-1
+          {:type :button
+           :value "Save"
+           :on-click #(save-doc!)}]
+        [:input.mr-1
+          {:type :button
+           :value "Save and export"
+           :on-click #(save-and-export! uri)}]]
+      [:div.row
+        ;; TODO fade out after setting
+        [:p save-status]]
+      [:div.row
+        [:span "Properties..."]]]))
 
 (defn build-current-question
   [{:keys [current-question-text current-answer-type current-required current-allow-na]}]
@@ -359,7 +365,6 @@
     [:li [:a {:href "/"} "Home"]]
     [:h1 "Survey Editor"]
     [save-control-group state]
-    [import-export state]
     [:ul
       [:li "Edit a survey"
         [:ul

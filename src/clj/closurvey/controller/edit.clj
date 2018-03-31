@@ -3,6 +3,7 @@
     [clojure.tools.logging :as log]
     [closurvey.layout :as layout]
     [closurvey.survey :as survey]
+    [closurvey.util.core :as util]
     [closurvey.view.edit :as view.edit]
     [ring.util.http-response :as response]))
 
@@ -44,3 +45,7 @@
        :export-link-base "/edit/export/"
        :glossary {:title "Survey Editor"}})))
 
+(defn export [surveyno]
+  (let [survey-info (survey/read-doc surveyno)
+        text (util/export-format "EDN" survey-info)]
+    (layout/render-text text)))

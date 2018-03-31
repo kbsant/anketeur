@@ -23,7 +23,6 @@
     [:p
       [:span.mr-1.font-weight-bold (str (inc pos))]
       question-text]
-    [:p (str answer-keys answer-agg coll-answers)]
     [:p [:span.label.label-info (get answer-template template)]]
     (if (empty? answer-keys)
       [:div
@@ -48,7 +47,6 @@
         [:a.ml-1 {:href (str export-link-base "JSON/id/" surveyno)} "JSON"]
         [:a.ml-1 {:href (str export-link-base "CSV/id/" surveyno)} "CSV"]
         [:a.ml-1 {:href (str export-link-base "EDN/id/" surveyno)} "EDN"]]
-      [:p (str state-info)]
       (map-indexed render-item question-answer-agg)]))
 
 (defn mount-components []

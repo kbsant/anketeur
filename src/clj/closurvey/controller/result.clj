@@ -37,6 +37,6 @@
          :glossary {:title "Survey Results"}}))))
 
 (defn export [format surveyno]
-  (let [result-agg (read-aggregate-result surveyno)]
-    (log/info "export survey: " surveyno "format: " format)
-    (util/export-format format result-agg)))
+  (let [result-agg (read-aggregate-result surveyno)
+        text (util/export-format format result-agg)]
+    (layout/render-text text)))

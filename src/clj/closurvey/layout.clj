@@ -11,6 +11,9 @@
 (parser/add-tag! :csrf-field (fn [_ _] (anti-forgery-field)))
 (filters/add-filter! :markdown (fn [content] [:safe (md-to-html-string content)]))
 
+(defn render-text [text]
+  (content-type (ok text) "text/plain"))
+
 (defn render-hiccup [hiccup-fn params]
   (content-type
     (ok
