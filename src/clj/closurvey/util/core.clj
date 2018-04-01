@@ -13,3 +13,5 @@
 (defmethod export-format "EDN" [_ data]
   (clojure.pprint/write data :stream nil))
 
+(defn resource-edn [path]
+  (-> path clojure.java.io/resource slurp clojure.edn/read-string))

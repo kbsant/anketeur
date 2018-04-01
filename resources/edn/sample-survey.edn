@@ -1,0 +1,118 @@
+{:custom-answer-text-input [""],
+ :surveyname "Sample Survey",
+ :current-question-text "",
+ :custom-answer-items [],
+ :custom-answer-type "Single selection",
+ :roles nil,
+ :question-map
+ {:new-question
+  {:question-text "",
+   :answer-type "Yes / No",
+   :required false,
+   :allow-na false,
+   :index :new-question},
+  "1"
+  {:question-text
+   "When conducting surveys, it is ok to host both the collected data on the cloud?",
+   :answer-type "Disagree ... Agree (5 levels)",
+   :allow-na false,
+   :required false,
+   :index "1"},
+  "2"
+  {:question-text "Which applications do you use to conduct surveys?",
+   :answer-type "Survey apps",
+   :allow-na false,
+   :required false,
+   :index "2"},
+  "3"
+  {:question-text
+   "On which devices are respondents likely to fill out surveys?",
+   :answer-type "Devices",
+   :allow-na false,
+   :required false,
+   :index "3"},
+  "4"
+  {:question-text
+   "Which devices are used when designing surveys and collecting survey results?",
+   :answer-type "Devices",
+   :allow-na false,
+   :required false,
+   :index "4"},
+  "5"
+  {:question-text
+   "For web-based surveys, which web browsers are respondents likely to use?",
+   :answer-type "Browsers",
+   :allow-na false,
+   :required false,
+   :index "5"},
+  "6"
+  {:question-text
+   "If there are any other platforms used for filling out surveys, please enter them below.",
+   :answer-type "Free text",
+   :allow-na false,
+   :required false,
+   :index "6"}},
+ :custom-answer-name "",
+ :question-list ["1" "2" "3" "4" "5" "6"],
+ :question-edit-mode false,
+ :current-allow-na false,
+ :current-required false,
+ :custom-answer-num-input nil,
+ :surveyno #uuid "48b03cd7-247f-47f1-b931-5cf22b510741",
+ :answer-types
+ {"Yes / No"
+  {:option-text "Yes / No",
+   :index 0,
+   :predefined true,
+   :template :radio,
+   :params {:values ["Yes" "No"]}},
+  "Disagree ... Agree (5 levels)"
+  {:option-text "Disagree ... Agree (5 levels)",
+   :index 1,
+   :predefined true,
+   :template :radio,
+   :params
+   {:values
+    ["Strongly disagree"
+     "Disagree"
+     "Neither agree nor disagree"
+     "Agree"
+     "Strongly agree"]}},
+  "Rating (5 levels)"
+  {:option-text "Rating (5 levels)",
+   :index 2,
+   :predefined true,
+   :template :radio,
+   :params {:values ["1" "2" "3" "4" "5"]}},
+  "Free text"
+  {:option-text "Free text",
+   :index 3,
+   :predefined true,
+   :template :text-area},
+  "Survey apps"
+  {:option-text "Survey apps",
+   :index 3,
+   :template :checkbox,
+   :params
+   {:values
+    ["Web browser"
+     "Email-based"
+     "Shared document (Spreadsheet, etc.)"
+     "Installed application"]}},
+  "Devices"
+  {:option-text "Devices",
+   :index 3,
+   :template :checkbox,
+   :params {:values ["Desktop/Notebook" "Tablet" "Phone"]}},
+  "Browsers"
+  {:option-text "Browsers",
+   :index 3,
+   :template :checkbox,
+   :params
+   {:values
+    ["IE 11 or below "
+     "IE 12 and up (Windows 10)"
+     "Chrome"
+     "Firefox"
+     "Safari"]}}},
+ :current-answer-type "Yes / No"}

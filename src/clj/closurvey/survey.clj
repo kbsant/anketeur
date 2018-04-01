@@ -3,6 +3,7 @@
     [closurvey.config :refer [env]]
     [closurvey.filestore :as fs]
     [clojure.string :as str]
+    [closurvey.util.core :as util]
     [crypto.password.bcrypt :as password]
     [mount.core :refer [defstate]]
     [clj-time.format :as fmt]
@@ -41,9 +42,19 @@
       view
       (get (as-id surveyno))))
 
+(defn init-demo-survey! [table]
+  (when
+    (and
+      (= "Demo" (:env env))
+      (empty? (keys (view table))))
+    (let [{:keys [surveyno] :as survey-info} (util/resource-edn "edn/sample-survey.edn")]
+      (when surveyno
+        (swap! (:data table) assoc surveyno survey-info))))
+  table)
+
 ;; Holder of state for store
 (defstate survey-table
-  :start (read-app-table "survey-table")
+  :start (init-demo-survey! (read-app-table "survey-table"))
   :stop (flush-table survey-table))
 
 ;; use a function because partial needs the table to be mounted first
