@@ -1,5 +1,7 @@
 (ns closurvey.core
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
+    [clojure.core.async :as async :refer [>! <!]]
     [clojure.string :as string]
     [closurvey.client.event :as event] 
     [reagent.core :as r]
@@ -109,6 +111,9 @@
       {:params {:survey-info doc}
        ;; TODO fade out after saving
        :handler #(do (swap! state assoc-in [:client-state :save-status] %)
+                     (go
+                       (<! (async/timeout 3000))
+                       (swap! state assoc-in [:client-state :save-status] ""))
                      (when handler-fn (handler-fn)))
        :error-handler #(swap! state assoc-in [:client-state :save-status] (str %))}))))
 
@@ -137,7 +142,10 @@
            :on-click #(save-and-export! uri)}]]
       [:div.row
         ;; TODO fade out after setting
-        [:p save-status]]
+        (let [style (if (string/blank? save-status)
+                        {:opacity 1}
+                        {:opacity 0 :transition [:opacity "3s"]})]
+          [:p {:style style} save-status])]
       [:div.row
         [:span "Properties..."]]]))
 
