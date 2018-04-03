@@ -1,5 +1,5 @@
 (ns closurvey.core
-  (:require-macros [cljs.core.async.macros :refer [go]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require
     [clojure.core.async :as async :refer [>! <!]]
     [clojure.string :as string]
@@ -100,6 +100,11 @@
       (assoc v i1 e2 i2 e1))
     v))
 
+(defn fade-save-status [state]
+   (go
+      (<! (async/timeout 3000))
+      (swap! state assoc-in [:client-state :save-status] "")))
+
 ;; TODO queuing and auto-save and status display and async stuff
 (defn save-doc!
  ([]
@@ -111,14 +116,24 @@
       {:params {:survey-info doc}
        ;; TODO fade out after saving
        :handler #(do (swap! state assoc-in [:client-state :save-status] %)
-                     (go
-                       (<! (async/timeout 3000))
-                       (swap! state assoc-in [:client-state :save-status] ""))
+                     (reset! docstate doc)
+                     (fade-save-status state)
                      (when handler-fn (handler-fn)))
        :error-handler #(swap! state assoc-in [:client-state :save-status] (str %))}))))
 
 (defn save-and-export! [uri]
   (save-doc! #(.open js/window uri)))
+
+(defn save-if-changed! []
+  (let [doc (doc-from-state @state)]
+    (when (not= doc @docstate)
+      (save-doc!))))
+
+(defn autosave-timer! []
+  (go-loop []
+    (<! (async/timeout 60000))
+    (save-if-changed!)
+    (recur)))
 
 (defn save-control-group [state]
   (let [{:keys [client-state surveyname surveyno]} @state
@@ -139,13 +154,11 @@
         [:input.mr-1
           {:type :button
            :value "Save and export"
-           :on-click #(save-and-export! uri)}]]
-      [:div.row
-        ;; TODO fade out after setting
+           :on-click #(save-and-export! uri)}]
         (let [style (if (string/blank? save-status)
                         {:opacity 1}
                         {:opacity 0 :transition [:opacity "3s"]})]
-          [:p {:style style} save-status])]
+          [:span {:style style} save-status])]
       [:div.row
         [:span "Properties..."]]]))
 
@@ -428,5 +441,6 @@
 (defn ^:export init []
   (appajax/load-interceptors! js/context js/csrfToken)
   (mount-components)
-  (load-transit!))
+  (load-transit!)
+  (autosave-timer!))
 
