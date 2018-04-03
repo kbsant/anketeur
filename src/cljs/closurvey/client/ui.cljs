@@ -1,5 +1,8 @@
 (ns closurvey.client.ui
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require
+    [clojure.core.async :as async :refer [>! <!]]
+    [clojure.string :as string]
     [goog.crypt.base64 :as base64]
     [cognitect.transit :as t]))
 
@@ -62,4 +65,20 @@
           (fn [i error]
             ^{:key i}
             [:p.text-danger error])))]))
+
+(defn fade-opacity [check-string]
+   (if (string/blank? check-string)
+      {:opacity 1}
+      {:opacity 0 :transition [:opacity "3s"]}))
+
+(defn repeat-timer [timer-fn millis]
+  (go-loop []
+    (<! (async/timeout millis))
+    (timer-fn)
+    (recur)))
+
+(defn single-timer[timer-fn millis]
+   (go
+      (<! (async/timeout millis))
+      (timer-fn)))
 

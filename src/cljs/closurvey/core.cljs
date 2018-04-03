@@ -1,7 +1,5 @@
 (ns closurvey.core
-  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require
-    [clojure.core.async :as async :refer [>! <!]]
     [clojure.string :as string]
     [closurvey.client.event :as event] 
     [reagent.core :as r]
@@ -101,9 +99,9 @@
     v))
 
 (defn fade-save-status [state]
-   (go
-      (<! (async/timeout 3000))
-      (swap! state assoc-in [:client-state :save-status] "")))
+   (ui/single-timer
+     #(swap! state assoc-in [:client-state :save-status] "")
+     3000))
 
 ;; TODO queuing and auto-save and status display and async stuff
 (defn save-doc!
@@ -111,12 +109,12 @@
   (save-doc! nil))
  ([handler-fn]
   (let [doc (doc-from-state @state)]
+    (reset! docstate doc)
     (POST
       "/save"
       {:params {:survey-info doc}
        ;; TODO fade out after saving
        :handler #(do (swap! state assoc-in [:client-state :save-status] %)
-                     (reset! docstate doc)
                      (fade-save-status state)
                      (when handler-fn (handler-fn)))
        :error-handler #(swap! state assoc-in [:client-state :save-status] (str %))}))))
@@ -128,12 +126,6 @@
   (let [doc (doc-from-state @state)]
     (when (not= doc @docstate)
       (save-doc!))))
-
-(defn autosave-timer! []
-  (go-loop []
-    (<! (async/timeout 60000))
-    (save-if-changed!)
-    (recur)))
 
 (defn save-control-group [state]
   (let [{:keys [client-state surveyname surveyno]} @state
@@ -155,10 +147,9 @@
           {:type :button
            :value "Save and export"
            :on-click #(save-and-export! uri)}]
-        (let [style (if (string/blank? save-status)
-                        {:opacity 1}
-                        {:opacity 0 :transition [:opacity "3s"]})]
-          [:span {:style style} save-status])]
+        [:span
+           {:style (ui/fade-opacity save-status)}
+           save-status]]
       [:div.row
         [:span "Properties..."]]]))
 
@@ -442,5 +433,5 @@
   (appajax/load-interceptors! js/context js/csrfToken)
   (mount-components)
   (load-transit!)
-  (autosave-timer!))
+  (ui/repeat-timer save-if-changed! 60000))
 
