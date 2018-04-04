@@ -98,6 +98,10 @@
 (defn read-answers [surveyno]
   (read-table-entry answer-table surveyno))
 
+(defn read-answer-form [surveyno formno]
+  (-> (read-table-entry answer-table surveyno)
+      (get formno)))
+
 (defn next-answer-counter!
   ([table surveyno formno]
    (or formno (next-answer-counter! table surveyno)))

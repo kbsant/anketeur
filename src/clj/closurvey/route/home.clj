@@ -14,7 +14,10 @@
   (POST "/save" request (edit/save-action request))
   (GET "/answer" [] (answer/render-opener))
   (POST "/answer" request (answer/answer-action request))
-  (GET "/answer/id/:surveyno" [surveyno] (answer/render-responder surveyno))
+  (GET "/answer/id/:surveyno" [surveyno] (answer/render-add surveyno))
+  (POST "/answer/add" request (answer/add-action request))
+  (GET "/answer/id/:surveyno/formno/:formno"
+       [surveyno formno] (answer/render-responder surveyno formno))
   (GET "/open" [] (edit/render-opener))
   (GET "/edit/id/:surveyno" [surveyno] (edit/render-editor surveyno))
   (GET "/edit/export/EDN/id/:surveyno" [surveyno] (edit/export surveyno))

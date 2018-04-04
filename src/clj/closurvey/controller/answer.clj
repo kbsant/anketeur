@@ -19,12 +19,32 @@
        :open-link-base "/answer/id/"
        :doclist doclist})))
 
-(defn render-responder [surveyno]
+(defn render-add [surveyno]
   (let [survey-info (survey/read-doc surveyno)]
     (log/info "surveyno: " surveyno "survey-info: " survey-info)
     (layout/render-hiccup
+      view.answer/add
+      {:survey-info (select-keys survey-info [:surveyno :surveyname :description])
+       :flash-errors (when-not survey-info "Error: Unable to open survey for answering.")
+       :glossary {:title "Survey"}})))
+
+(defn add-action [{:keys [params] :as request}]
+  (let [{:keys [surveyno]} params
+        survey-info (when surveyno (survey/read-doc surveyno))
+        formno (when survey-info (survey/save-answers! surveyno {:answers {}}))]
+    (log/info "surveyno: " surveyno "formno:" formno)
+    (if formno
+      (-> (response/see-other (str "/answer/id/" surveyno "/formno/" formno)))
+      (-> (response/internal-server-error "Error: Unable to open survey for answering.")))))
+
+(defn render-responder [surveyno formno]
+  (let [survey-info (survey/read-doc surveyno)
+        form (survey/read-answer-form surveyno formno)]
+    (log/info "surveyno: " surveyno "form:" form)
+    (layout/render-hiccup
       view.answer/responder
-      {:survey-info survey-info
+      {:survey-info (assoc-in survey-info [:answers :formno] (when form formno))
+       :flash-errors (when-not form "Error: Unable to open survey for answering.")
        :glossary {:title "Survey"}})))
 
 ;; TODO sanitize/validate form data

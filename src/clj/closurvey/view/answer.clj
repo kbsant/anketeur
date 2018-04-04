@@ -1,7 +1,24 @@
 (ns closurvey.view.answer
   (:require
     [closurvey.view.parts :as parts]
+    [ring.util.anti-forgery :refer [anti-forgery-field]]
     [hiccup.page :as page]))
+
+(defn add-content [{:keys [surveyname surveyno description] :as survey-info}]
+  [:div.container
+    [:h1 "Respond to a survey"]
+    [:h2 surveyname]
+    [:p description]
+    [:form {:method :POST :action "/answer/add"}
+      (anti-forgery-field)
+      [:input {:type :hidden :name "surveyno" :value surveyno}]
+      [:input {:type :submit :value "Start"}]]])
+
+(defn add [{:keys [survey-info glossary message]}]
+  (parts/main
+    glossary
+    nil
+    (add-content survey-info)))
 
 (defn opener [data]
   (let [init-state (merge
