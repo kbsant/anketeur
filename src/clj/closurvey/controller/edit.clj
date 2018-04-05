@@ -43,6 +43,7 @@
       view.edit/editor
       {:survey-info survey-info
        :export-link-base "/edit/export/"
+       :response-link-base "/answer/id/"
        :glossary {:title "Survey Editor"}})))
 
 (defn export [surveyno]

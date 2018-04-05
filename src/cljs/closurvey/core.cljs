@@ -128,9 +128,10 @@
       (save-doc!))))
 
 (defn save-control-group [state]
-  (let [{:keys [client-state surveyname surveyno]} @state
-        {:keys [export-link-base save-status]} client-state
-        uri (str export-link-base "EDN/id/" surveyno)]
+  (let [{:keys [client-state surveyname surveyno description]} @state
+        {:keys [export-link-base response-link-base save-status]} client-state
+        export-uri (str export-link-base "EDN/id/" surveyno)
+        response-uri (str response-link-base surveyno)]
     [:div.container
       [:div.row [:span.font-weight-bold "Edit a survey"]]
       [:div.row
@@ -146,12 +147,23 @@
         [:input.mr-1
           {:type :button
            :value "Save and export"
-           :on-click #(save-and-export! uri)}]
+           :on-click #(save-and-export! export-uri)}]
+        [:input.mr-1
+          {:type :button
+           :value "Link to respond to this survey"
+           :on-click #(.open js/window response-uri)}]
         [:span
            {:style (ui/fade-opacity save-status)}
            save-status]]
       [:div.row
-        [:span "Properties..."]]]))
+        [:span "Properties..."]]
+      [:div.row
+       [:div.col-xs-8
+        [:textarea.mr-1w-75
+          {:style {:width "75%"}
+           :placeholder "Description"
+           :value description
+           :on-change (event/assoc-with-js-value state :description)}]]]]))
 
 (defn build-current-question
   [{:keys [current-question-text current-answer-type current-required current-allow-na]}]
@@ -424,7 +436,7 @@
 (defn load-transit! []
   (let [init-state (ui/read-transit-state js/transitState)
         survey-info (:survey-info init-state)
-        init-client-state (select-keys init-state [:export-link-base :flash-errors])]
+        init-client-state (select-keys init-state [:response-link-base :export-link-base :flash-errors])]
     (swap! state merge survey-info)
     (swap! state update :client-state merge init-client-state)
     (reset! docstate (doc-from-state @state))))
