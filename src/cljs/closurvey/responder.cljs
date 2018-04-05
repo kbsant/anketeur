@@ -56,7 +56,7 @@
           [:span.font-weight-bold (str "Question List (" (count questions) ")")]]
         (when-not (empty? questions)
           [:form#response
-            (map-indexed render-question questions)])])))
+            (map render-question questions)])])))
 
 (defn home-page []
   [:div.container

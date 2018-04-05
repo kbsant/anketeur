@@ -1,11 +1,27 @@
 (ns closurvey.model)
 
+(defn outline-pos
+  "Assign a numerical position to each question in a map, ordered by a list of indices.
+  Skip numbering if a question is marked as :skip."
+  [question-map indices pos]
+  (if (empty? indices)
+    question-map
+    (let [[index & next-indices] indices
+          not-skip? (not (get-in question-map [index :skip]))
+          next-map (cond->
+                     question-map
+                     not-skip?
+                     (assoc-in [index :pos] pos))
+          next-pos (cond-> pos not-skip? inc)]
+      (recur next-map next-indices next-pos))))
+
 (defn question-list-view
   "question-index holds the indexed data, while the order is determined by question-list.
   To obtain a list view of the questions, de-reference the index using the question list."
   [{:keys [question-map question-list ] :as state-info}]
   (when question-map
-    (map question-map question-list)))
+    (let [outlined-map (outline-pos question-map question-list 1)]
+      (map outlined-map question-list))))
 
 (defn next-question-id [question-map]
   (->> question-map

@@ -40,12 +40,14 @@
 (def empty-question
   {:current-question-text ""
    :current-answer-type (:option-text yes-no-option)
+   :current-skip false
    :current-required false
    :current-allow-na false})
 
 (def new-question
   {:question-text ""
    :answer-type (:option-text yes-no-option)
+   :skip false
    :required false
    :allow-na false})
 
@@ -166,11 +168,12 @@
            :on-change (event/assoc-with-js-value state :description)}]]]]))
 
 (defn build-current-question
-  [{:keys [current-question-text current-answer-type current-required current-allow-na]}]
+  [{:keys [current-question-text current-answer-type current-required current-allow-na current-skip]}]
   (when-not (string/blank? current-question-text)
     {:question-text current-question-text
      :answer-type current-answer-type
      :allow-na current-allow-na
+     :skip current-skip
      :required current-required}))
 
 (defn render-select-options
@@ -213,6 +216,13 @@
            :value (:current-allow-na @state)
            :on-change #(swap! state update :current-allow-na not)}]
         "Provide Not Applicable"]
+      [:label.mr-1
+        [:input.mr-1
+          {:type :checkbox
+           :checked (:current-skip @state)
+           :value (:current-skip @state)
+           :on-change #(swap! state update :current-skip not)}]
+        "Skip numbering (child item)"]
       [:input {:type :button
                :value "Add"
                :on-click #(when-let [q (build-current-question @state)]
@@ -220,19 +230,19 @@
                             (swap! state merge empty-question))}]]])
 
 (defn edit-question
-  [state pos {:keys [question-text answer-type required allow-na index] :as question}]
+  [state ord {:keys [pos question-text answer-type required allow-na skip index] :as question}]
   ^{:key index}
   [:div.container
     [:div.row
       [:input.mr-1
        {:type :button
         :value "↑"
-        :on-click #(swap! state update :question-list vswap (dec pos) pos)}]
+        :on-click #(swap! state update :question-list vswap (dec ord) ord)}]
       [:input.mr-1
        {:type :button
         :value "↓"
-        :on-click #(swap! state update :question-list vswap pos (inc pos))}]
-      [:span.mr-1.font-weight-bold (str (inc pos))]
+        :on-click #(swap! state update :question-list vswap ord (inc ord))}]
+      [:span.mr-1.font-weight-bold (str pos)]
       [:input.mr-1
         {:type :text
          :value question-text
@@ -250,7 +260,7 @@
         [:input.mr-1
           {:type :checkbox
            :checked required
-           :value required
+           :value (true? required)
            :on-change #(swap!
                         state update-in
                         [:question-map index :required]
@@ -260,12 +270,22 @@
         [:input.mr-1
           {:type :checkbox
            :checked allow-na
-           :value allow-na
+           :value (true? allow-na)
            :on-change #(swap!
                         state update-in
                         [:question-map index :allow-na]
                         not)}]
-        "Provide Not Applicable"]]])
+        "Provide Not Applicable"]
+      [:label.mr-1
+        [:input.mr-1
+          {:type :checkbox
+           :checked skip
+           :value (true? skip)
+           :on-change #(swap!
+                        state update-in
+                        [:question-map index :skip]
+                        not)}]
+        "Skip numbering (child item)"]]])
 
 (defn answer-text-input-fn [state]
   (let [custom-answer-text-input (concat (:custom-answer-text-input @state) [""])]
@@ -368,7 +388,7 @@
     (let [questions (model/question-list-view @state)
           render-question (if (:question-edit-mode @state) 
                               (partial edit-question state)
-                              (partial form/preview-question @state))]
+                              #(form/preview-question @state %2))]
       [:div.container
         [:div.row
           [:span.font-weight-bold (str "Question List (" (count questions) ")")]
