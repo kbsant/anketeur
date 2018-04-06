@@ -1,5 +1,84 @@
 (ns closurvey.model)
 
+(def yes-no-option
+  {:option-text "Yes / No"
+   :index 0
+   :predefined true
+   :template :radio
+   :params {:values ["Yes" "No"]}})
+
+(def agree-disagree-5-levels-option
+  {:option-text "Disagree ... Agree (5 levels)"
+   :index 1
+   :predefined true
+   :template :radio
+   :params {:values ["Strongly disagree" "Disagree" "Neither agree nor disagree"
+                    "Agree" "Strongly agree"]}})
+
+(def rating-5-levels-option
+  {:option-text "Rating (5 levels)"
+   :index 2
+   :predefined true
+   :template :radio
+   :params {:values ["1" "2" "3" "4" "5"]}})
+
+(def text-area-option
+  {:option-text "Free text"
+   :index 3
+   :predefined true
+   :template :text-area})
+
+(def static-option
+  {:option-text "Static text/comment"
+   :index 4
+   :predefined true
+   :template :static})
+
+(def empty-question
+  {:current-question-text ""
+   :current-answer-type (:option-text yes-no-option)
+   :current-skip false
+   :current-required false
+   :current-allow-na false})
+
+(def new-question
+  {:question-text ""
+   :answer-type (:option-text yes-no-option)
+   :skip false
+   :required false
+   :allow-na false})
+
+(defn map-with-key
+  "Transform a sequence ({:k k1 ...}, {:k k2 ...}...)
+  into a map {k1 {:k k1 ...} k2 {:k k2, ...}}"
+  [key submaps]
+  (zipmap (map key submaps) submaps))
+
+(def answer-template-options
+  (map-with-key
+    :option-text
+    [{:index 0, :option-text "Single selection", :template :radio, :param-type :text}
+     {:index 1, :option-text "Multiple selection", :template :checkbox, :param-type :text}
+     {:index 2, :option-text "Rating", :template :radio, :param-type :rating}]))
+
+(def empty-custom-answer
+  {:custom-answer-name ""
+   :custom-answer-num-input nil
+   :custom-answer-text-input [""]
+   :custom-answer-type (first (keys answer-template-options))
+   :custom-answer-items []})
+
+(def empty-survey-info
+      {:surveyname ""
+       :client-state {}
+       :question-list []
+       :question-map
+        {:new-question (assoc new-question :index :new-question)}
+       :answer-types
+        (map-with-key
+          :option-text
+          [yes-no-option agree-disagree-5-levels-option rating-5-levels-option text-area-option static-option])})
+
 (defn outline-pos
   "Assign a numerical position to each question in a map, ordered by a list of indices.
   Skip numbering if a question is marked as :skip."

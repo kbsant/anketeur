@@ -9,67 +9,6 @@
     [closurvey.ajax :as appajax]
     [ajax.core :refer [GET POST]]))
 
-(def yes-no-option
-  {:option-text "Yes / No"
-   :index 0
-   :predefined true
-   :template :radio
-   :params {:values ["Yes" "No"]}})
-
-(def agree-disagree-5-levels-option
-  {:option-text "Disagree ... Agree (5 levels)"
-   :index 1
-   :predefined true
-   :template :radio
-   :params {:values ["Strongly disagree" "Disagree" "Neither agree nor disagree"
-                    "Agree" "Strongly agree"]}})
-
-(def rating-5-levels-option
-  {:option-text "Rating (5 levels)"
-   :index 2
-   :predefined true
-   :template :radio
-   :params {:values ["1" "2" "3" "4" "5"]}})
-
-(def text-area-option
-  {:option-text "Free text"
-   :index 3
-   :predefined true
-   :template :text-area})
-
-(def empty-question
-  {:current-question-text ""
-   :current-answer-type (:option-text yes-no-option)
-   :current-skip false
-   :current-required false
-   :current-allow-na false})
-
-(def new-question
-  {:question-text ""
-   :answer-type (:option-text yes-no-option)
-   :skip false
-   :required false
-   :allow-na false})
-
-(defn map-with-key
-  "Transform a sequence ({:k k1 ...}, {:k k2 ...}...)
-  into a map {k1 {:k k1 ...} k2 {:k k2, ...}}"
-  [key submaps]
-  (zipmap (map key submaps) submaps))
-
-(def answer-template-options
-  (map-with-key
-    :option-text
-    [{:index 0, :option-text "Single selection", :template :radio, :param-type :text}
-     {:index 1, :option-text "Multiple selection", :template :checkbox, :param-type :text}
-     {:index 2, :option-text "Rating", :template :radio, :param-type :rating}]))
-
-(def empty-custom-answer
-  {:custom-answer-name ""
-   :custom-answer-num-input nil
-   :custom-answer-text-input [""]
-   :custom-answer-type (first (keys answer-template-options))
-   :custom-answer-items []})
 
 (defonce docstate
   (atom {}))
@@ -77,17 +16,9 @@
 (defonce state
   (r/atom
     (merge
-      empty-question
-      empty-custom-answer
-      {:surveyname ""
-       :client-state {}
-       :question-list []
-       :question-map
-        {:new-question (assoc new-question :index :new-question)}
-       :answer-types
-        (map-with-key
-          :option-text
-          [yes-no-option agree-disagree-5-levels-option rating-5-levels-option text-area-option])})))
+      model/empty-question
+      model/empty-custom-answer
+      model/empty-survey-info)))
 
 (defn doc-from-state [state-info]
   (dissoc state-info :client-state))
@@ -227,65 +158,67 @@
                :value "Add"
                :on-click #(when-let [q (build-current-question @state)]
                             (swap! state model/add-question q)
-                            (swap! state merge empty-question))}]]])
+                            (swap! state merge model/empty-question))}]]])
 
 (defn edit-question
-  [state ord {:keys [pos question-text answer-type required allow-na skip index] :as question}]
-  ^{:key index}
-  [:div.container
-    [:div.row
-      [:input.mr-1
-       {:type :button
-        :value "↑"
-        :on-click #(swap! state update :question-list vswap (dec ord) ord)}]
-      [:input.mr-1
-       {:type :button
-        :value "↓"
-        :on-click #(swap! state update :question-list vswap ord (inc ord))}]
-      [:span.mr-1.font-weight-bold (str pos)]
-      [:input.mr-1
-        {:type :text
-         :value question-text
-         :placeholder "Question"
-         :on-change (event/assoc-in-with-js-value
-                      state
-                      [:question-map index :question-text])}]
-      [:select.mr-1
-        {:value answer-type
-         :on-change (event/assoc-in-with-js-value
-                      state
-                      [:question-map index :answer-type])}
-        (render-select-options (:answer-types @state))]
-      [:label.mr-1
+  [state ord question]
+  (let [{:keys [pos question-text answer-type required allow-na skip index]}
+        (merge model/new-question question)]
+    ^{:key index}
+    [:div.container
+      [:div.row
         [:input.mr-1
-          {:type :checkbox
-           :checked required
-           :value (true? required)
-           :on-change #(swap!
-                        state update-in
-                        [:question-map index :required]
-                        not)}]
-        "Require an answer"]
-      [:label.mr-1
+         {:type :button
+          :value "↑"
+          :on-click #(swap! state update :question-list vswap (dec ord) ord)}]
         [:input.mr-1
-          {:type :checkbox
-           :checked allow-na
-           :value (true? allow-na)
-           :on-change #(swap!
-                        state update-in
-                        [:question-map index :allow-na]
-                        not)}]
-        "Provide Not Applicable"]
-      [:label.mr-1
+         {:type :button
+          :value "↓"
+          :on-click #(swap! state update :question-list vswap ord (inc ord))}]
+        [:span.mr-1.font-weight-bold (str pos)]
         [:input.mr-1
-          {:type :checkbox
-           :checked skip
-           :value (true? skip)
-           :on-change #(swap!
-                        state update-in
-                        [:question-map index :skip]
-                        not)}]
-        "Skip numbering (child item)"]]])
+          {:type :text
+           :value question-text
+           :placeholder "Question"
+           :on-change (event/assoc-in-with-js-value
+                        state
+                        [:question-map index :question-text])}]
+        [:select.mr-1
+          {:value answer-type
+           :on-change (event/assoc-in-with-js-value
+                        state
+                        [:question-map index :answer-type])}
+          (render-select-options (:answer-types @state))]
+        [:label.mr-1
+          [:input.mr-1
+            {:type :checkbox
+             :checked required
+             :value required
+             :on-change #(swap!
+                          state update-in
+                          [:question-map index :required]
+                          not)}]
+          "Require an answer"]
+        [:label.mr-1
+          [:input.mr-1
+            {:type :checkbox
+             :checked allow-na
+             :value allow-na
+             :on-change #(swap!
+                          state update-in
+                          [:question-map index :allow-na]
+                          not)}]
+          "Provide Not Applicable"]
+        [:label.mr-1
+          [:input.mr-1
+            {:type :checkbox
+             :checked skip
+             :value skip
+             :on-change #(swap!
+                          state update-in
+                          [:question-map index :skip]
+                          not)}]
+          "Skip numbering (child item)"]]]))
 
 (defn answer-text-input-fn [state]
   (let [custom-answer-text-input (concat (:custom-answer-text-input @state) [""])]
@@ -338,8 +271,8 @@
 (defn build-custom-answer
   [{:keys [custom-answer-type custom-answer-name custom-answer-params answer-types]
     :as state-info}]
-  (let [template (get-in answer-template-options [custom-answer-type :template])
-        param-type (get-in answer-template-options [custom-answer-type :param-type])
+  (let [template (get-in model/answer-template-options [custom-answer-type :template])
+        param-type (get-in model/answer-template-options [custom-answer-type :param-type])
         value-fn (get-in custom-answer-input-fn [param-type :value-fn])
         custom-answer-params (value-fn state-info)
         index (->> answer-types vals (map :index) (concat [0]) last)]
@@ -354,7 +287,7 @@
 
 (defn render-custom-answer-input [state]
   (let [custom-answer-type (:custom-answer-type @state)
-        param-type (get-in answer-template-options [custom-answer-type :param-type])
+        param-type (get-in model/answer-template-options [custom-answer-type :param-type])
         render-fn (get-in custom-answer-input-fn [param-type :render-fn])]
     (when render-fn
       (render-fn state))))
@@ -371,7 +304,7 @@
       [:select
         {:value (:custom-answer-type @state)
          :on-change (event/assoc-with-js-value state :custom-answer-type)}
-        (render-select-options answer-template-options)]]
+        (render-select-options model/answer-template-options)]]
     [:div.row
       [render-custom-answer-input state]
       [:input {:type :button
@@ -381,7 +314,7 @@
                                    assoc-in
                                    [:answer-types (:option-text new-answer)]
                                    new-answer)
-                            (swap! state merge empty-custom-answer))}]]])
+                            (swap! state merge model/empty-custom-answer))}]]])
 
 (defn question-list [state]
   (fn []
@@ -455,7 +388,9 @@
 
 (defn load-transit! []
   (let [init-state (ui/read-transit-state js/transitState)
-        survey-info (:survey-info init-state)
+        default-anwer-types (:answer-types model/empty-survey-info)
+        init-survey-info (:survey-info init-state)
+        survey-info (update init-survey-info :answer-types merge default-anwer-types)
         init-client-state (select-keys init-state [:response-link-base :export-link-base :flash-errors])]
     (swap! state merge survey-info)
     (swap! state update :client-state merge init-client-state)
