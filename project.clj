@@ -1,4 +1,4 @@
-(defproject closurvey "0.1.0-SNAPSHOT"
+(defproject anketeur "0.1.0-SNAPSHOT"
 
   :description "A simple app for conducting surveys"
   :url "http://www.ashikasoft.com"
@@ -44,7 +44,7 @@
   :test-paths ["test/clj"]
   :resource-paths ["resources" "target/cljsbuild"]
   :target-path "target/%s/"
-  :main ^:skip-aot closurvey.core
+  :main ^:skip-aot anketeur.core
   :migratus {:store :database :db ~(get (System/getenv) "DATABASE_URL")}
 
   :plugins [[lein-cprop "1.0.3"]
@@ -77,7 +77,7 @@
              
              
              :aot :all
-             :uberjar-name "closurvey.jar"
+             :uberjar-name "anketeur.jar"
              :source-paths ["env/prod/clj"]
              :resource-paths ["env/prod/resources"]}
 
@@ -100,9 +100,9 @@
                   {:builds
                    {:app
                     {:source-paths ["src/cljs" "src/cljc" "env/dev/cljs"]
-                     :figwheel {:on-jsload "closurvey.core/mount-components"}
+                     :figwheel {:on-jsload "anketeur.core/mount-components"}
                      :compiler
-                     {:main "closurvey.app"
+                     {:main "anketeur.app"
                       :asset-path "/js/out"
                       :output-to "target/cljsbuild/public/js/app.js"
                       :output-dir "target/cljsbuild/public/js/out"
@@ -125,7 +125,7 @@
                     {:source-paths ["src/cljc" "src/cljs" "test/cljs"]
                      :compiler
                      {:output-to "target/test.js"
-                      :main "closurvey.doo-runner"
+                      :main "anketeur.doo-runner"
                       :optimizations :whitespace
                       :pretty-print true}}}}}
                   

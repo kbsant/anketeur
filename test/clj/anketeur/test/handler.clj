@@ -1,7 +1,7 @@
-(ns closurvey.test.handler
+(ns anketeur.test.handler
   (:require [clojure.test :refer :all]
             [ring.mock.request :refer :all]
-            [closurvey.handler :refer :all]))
+            [anketeur.handler :refer :all]))
 
 (deftest test-app
   (testing "main route"

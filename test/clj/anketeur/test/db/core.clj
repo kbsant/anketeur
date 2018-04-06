@@ -1,17 +1,17 @@
-(ns closurvey.test.db.core
-  (:require [closurvey.db.core :refer [*db*] :as db]
+(ns anketeur.test.db.core
+  (:require [anketeur.db.core :refer [*db*] :as db]
             [luminus-migrations.core :as migrations]
             [clojure.test :refer :all]
             [clojure.java.jdbc :as jdbc]
-            [closurvey.config :refer [env]]
+            [anketeur.config :refer [env]]
             [mount.core :as mount]))
 
 (use-fixtures
   :once
   (fn [f]
     (mount/start
-      #'closurvey.config/env
-      #'closurvey.db.core/*db*)
+      #'anketeur.config/env
+      #'anketeur.db.core/*db*)
     (migrations/migrate ["migrate"] (select-keys env [:database-url]))
     (f)))
 

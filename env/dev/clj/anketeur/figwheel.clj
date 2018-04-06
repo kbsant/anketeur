@@ -1,4 +1,4 @@
-(ns closurvey.figwheel
+(ns anketeur.figwheel
   (:require [figwheel-sidecar.repl-api :as ra]))
 
 (defn start-fw []
