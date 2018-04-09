@@ -8,7 +8,6 @@
                  [compojure "1.6.0"]
                  [cprop "0.1.11"]
                  [crypto-password "0.2.0"]
-                 [funcool/struct "1.1.0"]
                  [luminus-immutant "0.2.4"]
                  [luminus-nrepl "0.1.4"]
                  [luminus/ring-ttl-session "0.3.2"]
