@@ -17,25 +17,26 @@
    :text-area "Freeform"})
 
 (defn render-item
-  [pos {:keys [question-text template answer-keys answer-agg coll-answers]}]
-  ^{:key pos}
+  [itemno {:keys [pos question-text template answer-keys answer-agg coll-answers]}]
+  ^{:key itemno}
   [:div.row.ml-1.pl-1
     [:p
-      [:span.mr-1.font-weight-bold (str (inc pos))]
-      question-text]
-    [:p [:span.label.label-info (get answer-template template)]]
-    (if (empty? answer-keys)
-      [:div
-        [:p "This questions has free-form answers only, which cannot be aggregated. The answers are:"]
-        [:p (str coll-answers)]]
-      [:div
-        [:p "Aggregated answers:"]
-        [:ul
-          (map
-            (fn [key]
-              ^{:key key}
-              [:li (str key " : " (get answer-agg key))])
-            answer-keys)]])])
+      [:span.mr-1.font-weight-bold (str pos)]
+      [:span.mr-1 question-text]
+      [:span.label.label-info (get answer-template template)]]
+    (when-not (= :static template)
+      (if (empty? answer-keys)
+        [:div
+          [:p "This questions has free-form answers only, which cannot be aggregated. The answers are:"]
+          [:p (str coll-answers)]]
+        [:div
+          [:p "Aggregated answers:"]
+          [:ul
+            (map
+              (fn [key]
+                ^{:key key}
+                [:li (str key " : " (get answer-agg key))])
+              answer-keys)]]))])
 
 (defn home-page []
   (let [{:keys [survey-info export-link-base question-answer-agg] :as state-info} @state
