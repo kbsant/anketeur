@@ -1,4 +1,4 @@
-(ns anketeur.core
+(ns anketeur.client.edit
   (:require
     [clojure.string :as string]
     [anketeur.client.event :as event] 
@@ -6,7 +6,7 @@
     [anketeur.model :as model]
     [anketeur.client.surveyform :as form]
     [anketeur.client.ui :as ui]
-    [anketeur.ajax :as appajax]
+    [anketeur.client.ajax :as appajax]
     [ajax.core :refer [GET POST]]))
 
 

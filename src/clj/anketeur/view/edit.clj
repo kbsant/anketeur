@@ -21,7 +21,7 @@
       (page/include-js "/js/app.js")
       [:script
         {:type "text/javascript"}
-        "anketeur.core.init();"])))
+        "anketeur.client.edit.init();"])))
 
 
 

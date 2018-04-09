@@ -5,7 +5,7 @@
     [anketeur.client.surveyform :as form]
     [anketeur.client.ui :as ui]
     [reagent.core :as r]
-    [anketeur.ajax :as appajax]
+    [anketeur.client.ajax :as appajax]
     [ajax.core :refer [GET POST]]))
 
 (defonce state

@@ -1,4 +1,4 @@
-(ns anketeur.ajax
+(ns anketeur.client.ajax
   (:require [ajax.core :as ajax]))
 
 (defn local-uri? [{:keys [uri]}]
