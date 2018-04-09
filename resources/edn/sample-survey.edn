@@ -1,29 +1,20 @@
-{:custom-answer-text-input [""],
+{:current-skip false,
+ :description "A survey to help improve online survey tools.",
+ :custom-answer-text-input [""],
  :surveyname "Sample Survey",
  :current-question-text "",
  :custom-answer-items [],
  :custom-answer-type "Single selection",
  :roles nil,
  :question-map
- {:new-question
-  {:question-text "",
-   :answer-type "Yes / No",
-   :required false,
-   :allow-na false,
-   :index :new-question},
-  "1"
+ {"9"
   {:question-text
-   "When conducting surveys, it is ok to host both the collected data on the cloud?",
-   :answer-type "Disagree ... Agree (5 levels)",
+   "A survey application should manage and deliver emails.",
+   :answer-type "Rating (5 levels)",
    :allow-na false,
+   :skip true,
    :required false,
-   :index "1"},
-  "2"
-  {:question-text "Which applications do you use to conduct surveys?",
-   :answer-type "Survey apps",
-   :allow-na false,
-   :required false,
-   :index "2"},
+   :index "9"},
   "3"
   {:question-text
    "On which devices are respondents likely to fill out surveys?",
@@ -37,7 +28,23 @@
    :answer-type "Devices",
    :allow-na false,
    :required false,
-   :index "4"},
+   :index "4",
+   :skip false},
+  "8"
+  {:question-text
+   "Which features are important for a survey application? (1 - least important 5 - most important)",
+   :answer-type "Static text/comment",
+   :allow-na false,
+   :skip false,
+   :required false,
+   :index "8"},
+  "7"
+  {:question-text "Survey application features",
+   :answer-type "Static text/comment",
+   :allow-na false,
+   :skip true,
+   :required false,
+   :index "7"},
   "5"
   {:question-text
    "For web-based surveys, which web browsers are respondents likely to use?",
@@ -51,9 +58,45 @@
    :answer-type "Free text",
    :allow-na false,
    :required false,
-   :index "6"}},
+   :index "6"},
+  "1"
+  {:question-text
+   "When conducting surveys, it is ok to host both the collected data on the cloud?",
+   :answer-type "Disagree ... Agree (5 levels)",
+   :allow-na false,
+   :required false,
+   :index "1",
+   :skip false},
+  "11"
+  {:question-text
+   "When showing results, the survey app should be able to present a variety of graphs.",
+   :answer-type "Rating (5 levels)",
+   :allow-na false,
+   :skip true,
+   :required false,
+   :index "11"},
+  "2"
+  {:question-text "Which applications do you use to conduct surveys?",
+   :answer-type "Survey apps",
+   :allow-na false,
+   :required true,
+   :index "2",
+   :skip false},
+  "10"
+  {:question-text "Images are needed as part of the questionnaire.",
+   :answer-type "Rating (5 levels)",
+   :allow-na false,
+   :skip true,
+   :required false,
+   :index "10"},
+  :new-question
+  {:question-text "",
+   :answer-type "Yes / No",
+   :required false,
+   :allow-na false,
+   :index :new-question}},
  :custom-answer-name "",
- :question-list ["1" "2" "3" "4" "5" "6"],
+ :question-list ["1" "2" "4" "3" "5" "7" "8" "9" "10" "11" "6"],
  :question-edit-mode false,
  :current-allow-na false,
  :current-required false,
@@ -114,5 +157,10 @@
      "IE 12 and up (Windows 10)"
      "Chrome"
      "Firefox"
-     "Safari"]}}},
+     "Safari"]}},
+  "Static text/comment"
+  {:option-text "Static text/comment",
+   :index 4,
+   :predefined true,
+   :template :static}},
  :current-answer-type "Yes / No"}
