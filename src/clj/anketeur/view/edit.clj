@@ -9,7 +9,7 @@
                      {:headline "Survey Editor"
                       :add-subhead "Create a Survey"
                       :open-subhead "Edit a Survey"})]
-    (parts/spa-appbase data init-state "anketeur.opener.init();")))
+    (parts/spa-appbase data init-state "anketeur.client.opener.init();")))
 
 (defn editor [data]
   (parts/appbase

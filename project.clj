@@ -12,7 +12,6 @@
                  [luminus-immutant "0.2.4"]
                  [luminus-nrepl "0.1.4"]
                  [luminus/ring-ttl-session "0.3.2"]
-                 [markdown-clj "1.0.1"]
                  [metosin/muuntaja "0.4.1"]
                  [metosin/ring-http-response "0.9.0"]
                  [mount "0.1.11"]
@@ -30,8 +29,7 @@
                  [reagent-utils "0.2.1"]
                  [ring-webjars "0.2.0"]
                  [ring/ring-core "1.6.3"]
-                 [ring/ring-defaults "0.3.1"]
-                 [selmer "1.11.3"]]
+                 [ring/ring-defaults "0.3.1"]]
 
   :min-lein-version "2.0.0"
 

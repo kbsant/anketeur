@@ -8,7 +8,7 @@
                      (select-keys data [:glossary :flash-errors :doclist :open-link-base])
                      {:headline "Survey Results"
                       :open-subhead "Open"})]
-    (parts/spa-appbase data init-state "anketeur.opener.init();")))
+    (parts/spa-appbase data init-state "anketeur.client.opener.init();")))
 
 (defn result-page [{:keys [survey-info flash-errors] :as data}]
   (parts/appbase

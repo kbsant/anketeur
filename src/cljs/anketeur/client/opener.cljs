@@ -1,4 +1,4 @@
-(ns anketeur.opener
+(ns anketeur.client.opener
   (:require
     [clojure.string :as string]
     [anketeur.client.event :as event]

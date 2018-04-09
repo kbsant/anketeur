@@ -25,7 +25,7 @@
                      (select-keys data [:glossary :flash-errors :doclist :open-link-base])
                      {:headline "Respond to a Survey"
                       :open-subhead "Open"})]
-    (parts/spa-appbase data init-state "anketeur.opener.init();")))
+    (parts/spa-appbase data init-state "anketeur.client.opener.init();")))
 
 (defn responder [{:keys [survey-info flash-errors] :as data}]
   (parts/appbase
@@ -37,5 +37,5 @@
       (page/include-js "/js/app.js")
       [:script
         {:type "text/javascript"}
-        "anketeur.responder.init();"])))
+        "anketeur.client.responder.init();"])))
 
