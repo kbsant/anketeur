@@ -5,4 +5,4 @@
     [anketeur.view.main :as view.main]))
 
 (defn render []
-  (layout/render-hiccup view.main/render {:glossary {:title "Survey"} :message (:app-message env)}))
+  (layout/render-hiccup view.main/render {:glossary {:appname "Anketeur" :title "Survey" :message (:app-message env)}}))
