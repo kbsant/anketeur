@@ -5,14 +5,11 @@
 
   :dependencies [[clj-time "0.14.2"]
                  [cljs-ajax "0.7.3"]
-                 [com.h2database/h2 "1.4.196"]
                  [compojure "1.6.0"]
-                 [conman "0.7.4"]
                  [cprop "0.1.11"]
                  [crypto-password "0.2.0"]
                  [funcool/struct "1.1.0"]
                  [luminus-immutant "0.2.4"]
-                 [luminus-migrations "0.4.4"]
                  [luminus-nrepl "0.1.4"]
                  [luminus/ring-ttl-session "0.3.2"]
                  [markdown-clj "1.0.1"]
@@ -34,7 +31,6 @@
                  [ring-webjars "0.2.0"]
                  [ring/ring-core "1.6.3"]
                  [ring/ring-defaults "0.3.1"]
-                 [secretary "1.2.3"]
                  [selmer "1.11.3"]]
 
   :min-lein-version "2.0.0"
@@ -45,10 +41,8 @@
   :resource-paths ["resources" "target/cljsbuild"]
   :target-path "target/%s/"
   :main ^:skip-aot anketeur.core
-  :migratus {:store :database :db ~(get (System/getenv) "DATABASE_URL")}
 
   :plugins [[lein-cprop "1.0.3"]
-            [migratus-lein "0.5.3"]
             [lein-cljsbuild "1.1.5"]
             [lein-immutant "2.1.0"]]
   :clean-targets ^{:protect false}
