@@ -45,6 +45,7 @@
           render-question (partial form/render-form-question state state-info "response")]
       [:div.container
         [:h1 (:surveyname state-info)]
+        [:p (:description state-info)]
         [:p (-> state-info :answers str)]
         [:ul
           [:li "Add survey description"]
@@ -58,22 +59,26 @@
           [:form#response
             (map render-question questions)])])))
 
+(defn save-control-group [state]
+  [:form.inline
+    [:input.mr-1
+      {:type :button
+       :value "Save"
+       :on-click #(save-answers!)}]
+    [:input.mr-1
+      {:type :button
+       :value "Save and complete"}]
+    (let [save-status (get-in @state [:client-state :save-status])]
+      [:span
+       {:style (ui/fade-opacity save-status)}
+       save-status])])
+
 (defn home-page []
   [:div.container
     [:ul [:li [:a {:href "/"} "Home"]]]
-    [:form.inline
-      [:input.mr-1
-        {:type :button
-         :value "Save"
-         :on-click #(save-answers!)}]
-      [:input.mr-1
-        {:type :button
-         :value "Save and publish"}]
-      (let [save-status (get-in @state [:client-state :save-status])]
-        [:span
-         {:style (ui/fade-opacity save-status)}
-         save-status])]
-    [question-list state]])
+    [save-control-group state]
+    [question-list state]
+    [save-control-group state]])
 
 (defn mount-components []
   (r/render [home-page] (.getElementById js/document "app")))

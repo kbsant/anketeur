@@ -16,8 +16,7 @@
         [:h1 headline]
         (when add-link
           [:div
-            [:ul
-              [:li add-subhead]]
+            [:h4 add-subhead]
             [:form.inline
               {:method :post
                :action add-link}
@@ -28,8 +27,7 @@
               [:input
                 {:type :submit
                  :value "Create new"}]]])
-        [:ul
-          [:li open-subhead]]
+        [:h4 open-subhead]
         (when (nil? add-link)
           [ui/errors-div :flash-errors state])
         (ui/doc-selector #(str open-link-base (:surveyno %)) @state)])))

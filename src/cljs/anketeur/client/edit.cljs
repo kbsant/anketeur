@@ -60,6 +60,17 @@
     (when (not= doc @docstate)
       (save-doc!))))
 
+(defn save-button-status [state]
+  (let [save-status (get-in @state [:client-state :save-status])]
+     [:form.inline
+      [:input.mr-1
+        {:type :button
+         :value "Save"
+         :on-click #(save-doc!)}]
+      [:span
+        {:style (ui/fade-opacity save-status)}
+        save-status]]))
+
 (defn save-control-group [state]
   (let [{:keys [client-state surveyname surveyno description]} @state
         {:keys [export-link-base response-link-base save-status]} client-state
@@ -378,7 +389,8 @@
             [:ul
               [:li "Yes / No"]
               [:li "Strongly disagree .. Strongly agree (5 levels)"]
-              [:li "Free text"]]]]]]])
+              [:li "Free text"]]]]]]
+    [save-button-status state]])
 
 ; -------------------------
 ;; Initialize app
