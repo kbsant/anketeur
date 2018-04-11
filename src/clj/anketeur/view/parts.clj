@@ -33,6 +33,7 @@
       [:link {:rel "shortcut icon" :type "image/png" :href "/img/favicon.png"}]
       [:title (glossary :title)]
       (page/include-css
+         "/css/screen.css"
          "/assets/bootstrap/css/bootstrap.min.css"
          "/assets/font-awesome/css/font-awesome.min.css")
       (page/include-js
@@ -49,6 +50,7 @@
       [:link {:rel "shortcut icon" :type "image/png" :href "/img/favicon.png"}]
       [:title (glossary :title)]
       (page/include-css
+         "/css/screen.css"
          "/assets/bootstrap/css/bootstrap.min.css"
          "/assets/font-awesome/css/font-awesome.min.css"
          "/css/main.css")

@@ -5,6 +5,7 @@
     [anketeur.model :as model]
     [anketeur.client.surveyform :as form]
     [anketeur.client.ui :as ui]
+    [anketeur.style :as style]
     [reagent.core :as r]
     [anketeur.client.ajax :as appajax]
     [ajax.core :refer [GET POST]]))
@@ -75,7 +76,7 @@
 
 (defn home-page []
   [:div.container
-    [:ul [:li [:a {:href "/"} "Home"]]]
+    [style/navbar [:a {:href "/"} "Home"]]
     [save-control-group state]
     [question-list state]
     [save-control-group state]])

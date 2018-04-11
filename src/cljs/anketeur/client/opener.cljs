@@ -3,6 +3,7 @@
     [clojure.string :as string]
     [anketeur.client.event :as event]
     [anketeur.client.ui :as ui]
+    [anketeur.style :as style]
     [reagent.core :as r]))
 
 (defonce state
@@ -34,7 +35,7 @@
 
 (defn home-page []
   [:div.container
-    [:ul [:li [:a {:href "/"} "Home"]]]
+    [style/navbar [:a {:href "/"} "Home"]]
     [doc-opener state]])
 
 (defn mount-components []
