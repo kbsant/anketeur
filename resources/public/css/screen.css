@@ -6,6 +6,11 @@ body {
 .navbar {
   margin-bottom: 10px;
   border-radius: 0px;
+  background: linear-gradient(to bottom right, teal, cyan);
+  color: white;
+}
+.navbar a, .navbar a:hover {
+  color: white;
 }
 .navbar-brand {
   float: none;
