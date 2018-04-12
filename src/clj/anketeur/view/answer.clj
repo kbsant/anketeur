@@ -1,11 +1,13 @@
 (ns anketeur.view.answer
   (:require
     [anketeur.view.parts :as parts]
+    [anketeur.style :as style]
     [ring.util.anti-forgery :refer [anti-forgery-field]]
     [hiccup.page :as page]))
 
 (defn add-content [{:keys [surveyname surveyno description] :as survey-info}]
   [:div.container
+    (style/navbar [:a {:href "/"} "Home"])
     [:h1 "Respond to a survey"]
     [:h2 surveyname]
     [:p description]

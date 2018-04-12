@@ -4,7 +4,6 @@
     [anketeur.client.event :as event]
     [anketeur.client.surveyform :as form]
     [anketeur.client.ui :as ui]
-    [anketeur.style :as style]
     [reagent.core :as r]
     [anketeur.client.ajax :as appajax]
     [ajax.core :refer [GET POST]]))
@@ -43,7 +42,6 @@
   (let [{:keys [survey-info export-link-base question-answer-agg] :as state-info} @state
                 surveyno (:surveyno survey-info)]
     [:div.container
-      [style/navbar [:a {:href "/"} "Home"]]
       [:h1 "Survey results"]
       [:p "Export to"
         [:a.ml-1 {:href (str export-link-base "JSON/id/" surveyno)} "JSON"]

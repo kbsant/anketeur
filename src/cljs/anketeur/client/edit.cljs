@@ -6,7 +6,6 @@
     [anketeur.model :as model]
     [anketeur.client.surveyform :as form]
     [anketeur.client.ui :as ui]
-    [anketeur.style :as style]
     [anketeur.client.ajax :as appajax]
     [ajax.core :refer [GET POST]]))
 
@@ -351,7 +350,6 @@
 
 (defn home-page []
   [:div.container
-    [style/navbar [:a {:href "/"} "Home"]]
     [:h1 "Survey Editor"]
     [save-control-group state]
     [:ul
