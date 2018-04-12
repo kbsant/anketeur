@@ -45,7 +45,6 @@
       [:h1 "Survey results"]
       [:p "Export to"
         [:a.ml-1 {:href (str export-link-base "JSON/id/" surveyno)} "JSON"]
-        [:a.ml-1 {:href (str export-link-base "CSV/id/" surveyno)} "CSV"]
         [:a.ml-1 {:href (str export-link-base "EDN/id/" surveyno)} "EDN"]]
       (map-indexed render-item question-answer-agg)]))
 

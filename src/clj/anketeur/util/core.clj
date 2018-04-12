@@ -4,9 +4,6 @@
 
 (defmulti export-format (fn [format _] format))
 
-(defmethod export-format "CSV" [_ data]
-  (json/generate-string data {:pretty true}))
-
 (defmethod export-format "JSON" [_ data]
   (json/generate-string data {:pretty true}))
 
