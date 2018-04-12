@@ -12,7 +12,7 @@ A demo is accessible online at: http://anketeur.herokuapp.com/
 ## Goals
 
 * The goal is to provide a simple yet flexible, self-contained web app for conducting surveys.
-* Data should be in a readily accessible format, e.g. json, edn, csv
+* Data should be in a readily accessible format, e.g. json, edn
 
 ## Non-goals
 
