@@ -36,6 +36,18 @@
     (if formno
       (-> (response/see-other (str "/answer/id/" surveyno "/formno/" formno)))
       (-> (response/internal-server-error "Error: Unable to open survey for answering.")))))
+;; TODO sanitize surveyno formno
+(defn render-responder-nojs [surveyno formno]
+  (let [survey-info (survey/read-doc surveyno)
+        form (survey/read-answer-form surveyno formno)]
+    (log/info " nojs surveyno: " surveyno "form:" form)
+    (layout/render-hiccup
+      view.answer/responder-nojs
+      {:survey-info (assoc-in survey-info [:answers :formno] (when form formno))
+       :surveyno surveyno
+       :formno formno
+       :flash-errors (when-not form "Error: Unable to open survey for answering.")
+       :glossary {:title "Survey"}})))
 
 (defn render-responder [surveyno formno]
   (let [survey-info (survey/read-doc surveyno)
@@ -44,6 +56,8 @@
     (layout/render-hiccup
       view.answer/responder
       {:survey-info (assoc-in survey-info [:answers :formno] (when form formno))
+       :surveyno surveyno
+       :formno formno
        :flash-errors (when-not form "Error: Unable to open survey for answering.")
        :glossary {:title "Survey"}})))
 

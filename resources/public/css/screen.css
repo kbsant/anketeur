@@ -9,7 +9,7 @@ body {
   background: linear-gradient(to bottom right, teal, cyan);
   color: white;
 }
-.navbar a, .navbar a:hover {
+.navbar a, .navbar a:hover, .navbar a:visited {
   color: white;
 }
 .navbar-brand {

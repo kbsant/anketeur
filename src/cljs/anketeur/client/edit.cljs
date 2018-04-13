@@ -4,11 +4,10 @@
     [anketeur.client.event :as event] 
     [reagent.core :as r]
     [anketeur.model :as model]
-    [anketeur.client.surveyform :as form]
+    [anketeur.form :as form]
     [anketeur.client.ui :as ui]
     [anketeur.client.ajax :as appajax]
     [ajax.core :refer [GET POST]]))
-
 
 (defonce docstate
   (atom {}))

@@ -3,7 +3,7 @@
     [clojure.string :as string]
     [anketeur.client.event :as event]
     [anketeur.model :as model]
-    [anketeur.client.surveyform :as form]
+    [anketeur.form :as form]
     [anketeur.client.ui :as ui]
     [reagent.core :as r]
     [anketeur.client.ajax :as appajax]
@@ -38,11 +38,18 @@
     (when (not= params @docstate)
       (save-answers!))))
 
+(defn form-change-handler [state form-id index ev]
+  (let [form (ui/element-by-id form-id)
+        value (ui/form-element-value form index)]
+    (swap! state assoc-in [:answers index] value)))
+
 (defn question-list [state]
   (fn []
     (let [state-info @state
           questions (model/question-list-view state-info)
-          render-question (partial form/render-form-question state state-info "response")]
+          form-id "response"
+          change-handler (partial form-change-handler state form-id)
+          render-question #(form/render-question state-info % change-handler)]
       [:div.container
         [:h1 (:surveyname state-info)]
         [:p (:description state-info)]
@@ -56,7 +63,7 @@
         [:div.row
           [:span.font-weight-bold (str "Question List (" (count questions) ")")]]
         (when-not (empty? questions)
-          [:form#response
+          [:form {:id form-id}
             (map render-question questions)])])))
 
 (defn save-control-group [state]

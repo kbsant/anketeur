@@ -18,6 +18,8 @@
   (POST "/answer/add" request (answer/add-action request))
   (GET "/answer/id/:surveyno/formno/:formno"
        [surveyno formno] (answer/render-responder surveyno formno))
+  (GET "/answernojs/id/:surveyno/formno/:formno"
+       [surveyno formno] (answer/render-responder-nojs surveyno formno))
   (GET "/open" [] (edit/render-opener))
   (GET "/edit/id/:surveyno" [surveyno] (edit/render-editor surveyno))
   (GET "/edit/export/EDN/id/:surveyno" [surveyno] (edit/export surveyno))

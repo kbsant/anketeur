@@ -1,13 +1,11 @@
-(ns anketeur.client.surveyform
+(ns anketeur.form
   (:require
-    [clojure.string :as string]
-    [anketeur.client.event :as event]
-    [anketeur.client.ui :as ui]))
+    [clojure.string :as string]))
 
-(defn change-handler [state form-id index ev]
-  (let [form (ui/element-by-id form-id)
-        value (ui/form-element-value form index)]
-    (swap! state assoc-in [:answers index] value)))
+(def wide-space "　")
+
+(defn navbar [contents]
+  [:div.container.navbar contents])
 
 (defn with-change-handler [m handler index]
   (cond-> m
@@ -74,11 +72,6 @@
         (when required [:span.alert.alert-info.ml-1.pl-1.py-0.my-0.small "* Required"])]
       (when-let [answer-renderer (render-answer-type state-info answer-type)]
         (answer-renderer index question handler))])
-
-;; pass the state-ref and state-info to avoid de-referencing a ratom,
-;; since reagent deref has side-effects that aren't needed in this call.
-(defn render-form-question [state-ref state-info form-id question]
-  (render-question state-info question (partial change-handler state-ref form-id)))
 
 (defn preview-question [state-info question]
   (render-question state-info question nil))

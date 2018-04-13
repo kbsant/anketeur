@@ -2,7 +2,7 @@
   (:require
     [clojure.data.codec.base64 :as base64]
     [anketeur.util.json :as json]
-    [anketeur.style :as style]
+    [anketeur.form :as form]
     [hiccup.core :as hc]
     [hiccup.page :as page]))
 
@@ -63,7 +63,7 @@
         (js-var "csrfToken" (js-quot csrf-token)))
       headitems]
     [:body
-      (style/navbar [:a {:href "/"} "Home"])
+      (form/navbar [:a {:href "/"} "Home"])
       [:div#app
         [:div.container
           [:div.jumbotron [:h1 (glossary :title)]]

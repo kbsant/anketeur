@@ -2,7 +2,7 @@
   (:require
     [clojure.string :as string]
     [anketeur.client.event :as event]
-    [anketeur.client.surveyform :as form]
+    [anketeur.form :as form]
     [anketeur.client.ui :as ui]
     [reagent.core :as r]
     [anketeur.client.ajax :as appajax]

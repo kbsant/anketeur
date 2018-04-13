@@ -1,11 +1,11 @@
 (ns anketeur.view.main
   (:require
-    [anketeur.style :as style :refer [wide-space]]
+    [anketeur.form :as form]
     [anketeur.view.parts :as parts]))
 
 (defn content [{:keys [appname message]}]
   [:div.container
-    (style/navbar [:h1 appname])
+    (form/navbar [:h1 appname])
     (when message [:p message])
     [:ul
       [:li [:a {:href "/open"} "Create or edit a survey"]]
