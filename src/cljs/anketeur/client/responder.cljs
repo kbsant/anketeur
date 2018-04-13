@@ -20,18 +20,24 @@
      #(swap! state assoc-in [:client-state :save-status] "")
      3000))
 
+(defn submit [form-id]
+  (.submit (ui/element-by-id form-id)))
+
 ;; TODO queuing and auto-save and status display and async stuff
-(defn save-answers! []
+(defn save-answers!
+ ([]
+  (save-answers! fade-save-status))
+ ([action-after]
   (let [params (select-keys @state [:surveyno :answers])]
     (reset! docstate params)
     (POST
       "/answer"
       {:params params
-       ;; TODO fade out after saving
        :handler #(do
                    (swap! state assoc-in [:client-state :save-status] %)
-                   (fade-save-status state))
-       :error-handler #(swap! state assoc-in [:client-state :save-status] (str %))})))
+                   (action-after state))
+       ;;TODO dont fade error
+       :error-handler #(swap! state assoc-in [:client-state :save-status] (str %))}))))
 
 (defn save-if-changed! []
   (let [params (select-keys @state [:surveyno :answers])]
@@ -54,27 +60,24 @@
         [:h1 (:surveyname state-info)]
         [:p (:description state-info)]
         [:p (-> state-info :answers str)]
-        [:ul
-          [:li "Add survey description"]
-          [:li "Add auto-save and display auto-save function."]
-          [:li "Add dedup number when a new survey is loaded"]
-          [:li "Add submit/mark as complete"]
-          [:li "See whether the survey can be resumed after session expiry/survives after back/refresh"]]
+        [:ul]
         [:div.row
           [:span.font-weight-bold (str "Question List (" (count questions) ")")]]
         (when-not (empty? questions)
           [:form {:id form-id}
             (map render-question questions)])])))
 
-(defn save-control-group [state]
+(defn save-control-group [form-id state]
   [:form.inline
+    {:id form-id :action (str "/answer/completed/" (:surveyno @state)) :method :GET}
     [:input.mr-1
       {:type :button
        :value "Save"
        :on-click #(save-answers!)}]
     [:input.mr-1
       {:type :button
-       :value "Save and complete"}]
+       :value "Save and complete"
+       :on-click #(save-answers! (fn [](submit form-id)))}]
     (let [save-status (get-in @state [:client-state :save-status])]
       [:span
        {:style (ui/fade-opacity save-status)}
@@ -82,9 +85,9 @@
 
 (defn home-page []
   [:div.container
-    [save-control-group state]
+    [save-control-group "save-top" state]
     [question-list state]
-    [save-control-group state]])
+    [save-control-group "save-bottom" state]])
 
 (defn mount-components []
   (r/render [home-page] (.getElementById js/document "app")))

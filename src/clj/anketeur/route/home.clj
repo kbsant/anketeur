@@ -13,6 +13,7 @@
   (POST "/add" [] (edit/add-action))
   (POST "/save" request (edit/save-action request))
   (GET "/answer" [] (answer/render-opener))
+  (GET "/answer/completed/:surveyno" [surveyno] (answer/completed surveyno))
   (POST "/answer" request (answer/answer-action request))
   (POST "/answernojs" request (answer/answernojs-action request))
   (GET "/answer/id/:surveyno" [surveyno] (answer/render-add surveyno))

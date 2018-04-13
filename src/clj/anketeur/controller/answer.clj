@@ -62,6 +62,16 @@
        :glossary {:title "Survey"}})))
 
 ;; TODO sanitize/validate form data
+(defn completed [surveyno]
+  (let [survey-info (survey/read-doc surveyno)]
+    (log/info "surveyno: " surveyno)
+    (layout/render-hiccup
+      view.answer/show-message
+      {:survey-info survey-info
+       :message "Thank you."
+       :glossary {:title "Survey"}})))
+
+;; TODO sanitize/validate form data
 (defn answer-action [{:keys [params] :as request}]
   (let [{:keys [surveyno answers]} params
         save-status (survey/save-answers! surveyno {:answers answers})]
@@ -78,10 +88,6 @@
         save-status (survey/save-answers! surveyno {:answers answers})]
     (log/info "surveyno: " surveyno "answers: " answers)
     (if save-status
-      (layout/render-hiccup
-        view.answer/show-message
-        {:survey-info survey-info
-         :message "Thank you."
-         :glossary {:title "Survey"}})
+      (-> (response/see-other (str "/answer/completed/" surveyno)))
       (response/internal-server-error "Internal error: unable to save form."))))
 
