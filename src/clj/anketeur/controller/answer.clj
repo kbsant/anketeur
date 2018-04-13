@@ -70,3 +70,18 @@
       (response/ok "Form saved.")
       (response/internal-server-error "Internal error: unable to save form."))))
 
+;; TODO sanitize/validate form data
+(defn answernojs-action [{:keys [params] :as request}]
+  (let [answers (dissoc params :__anti-forgery-token :surveyno)
+        {:keys [surveyno formno]} params
+        survey-info (survey/read-doc surveyno)
+        save-status (survey/save-answers! surveyno {:answers answers})]
+    (log/info "surveyno: " surveyno "answers: " answers)
+    (if save-status
+      (layout/render-hiccup
+        view.answer/show-message
+        {:survey-info survey-info
+         :message "Thank you."
+         :glossary {:title "Survey"}})
+      (response/internal-server-error "Internal error: unable to save form."))))
+

@@ -14,6 +14,7 @@
   (POST "/save" request (edit/save-action request))
   (GET "/answer" [] (answer/render-opener))
   (POST "/answer" request (answer/answer-action request))
+  (POST "/answernojs" request (answer/answernojs-action request))
   (GET "/answer/id/:surveyno" [surveyno] (answer/render-add surveyno))
   (POST "/answer/add" request (answer/add-action request))
   (GET "/answer/id/:surveyno/formno/:formno"

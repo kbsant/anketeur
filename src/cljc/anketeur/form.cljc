@@ -25,7 +25,7 @@
                 (with-change-handler
                   {:type radio-or-checkbox :name input-name :value input-value}
                   handler
-                  input-name)]
+                  index)]
               input-value])
           values)
         (when (and allow-na (= :radio radio-or-checkbox))
@@ -34,7 +34,7 @@
               (with-change-handler
                 {:type :radio :name input-name :value "Not applicable"}
                 handler
-                input-name)]
+                index)]
             "Not applicable"])])))
 
 (defn render-answer-text-area
@@ -47,7 +47,7 @@
           (with-change-handler
             {:name input-name}
             handler
-            input-name)]])))
+            index)]])))
 
 (def answer-templates
   {:radio (partial render-template-radio-or-checkbox :radio)

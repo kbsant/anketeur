@@ -6,6 +6,18 @@
     [ring.util.anti-forgery :refer [anti-forgery-field]]
     [hiccup.page :as page]))
 
+(defn message-view [surveyname message]
+  [:div.container
+    (form/navbar [:a {:href "/"} "Home"])
+    [:h1 surveyname]
+    [:p message]])
+
+(defn show-message [{:keys [survey-info glossary message]}]
+  (parts/main
+    glossary
+    nil
+    (message-view (:surveyname survey-info) message)))
+
 (defn add-content [{:keys [surveyname surveyno description] :as survey-info}]
   [:div.container
     (form/navbar [:a {:href "/"} "Home"])
@@ -17,7 +29,7 @@
       [:input {:type :hidden :name "surveyno" :value surveyno}]
       [:input {:type :submit :value "Start"}]]])
 
-(defn add [{:keys [survey-info glossary message]}]
+(defn add [{:keys [survey-info glossary]}]
   (parts/main
     glossary
     nil
@@ -54,19 +66,16 @@
       (form/navbar [:a {:href "/"} "Home"])
       [:h1 (:surveyname survey-info)]
       [:p (:description survey-info)]
-      [:p (-> survey-info :answers str)]
-      [:ul
-        [:li "Add submit/mark as complete"]
-        [:li "See whether the survey can be resumed after session expiry/survives after back/refresh"]]
       [:div.row
         [:span.font-weight-bold (str "Question List (" (count questions) ")")]
         (when-not (empty? questions)
-          [:form#response {:action "/answernojs/submit" :method :POST}
+          [:form#response {:action "/answernojs" :method :POST}
+            (anti-forgery-field)
             [:input {:type :hidden :name "formno" :value formno}]
             [:input {:type :hidden :name "surveyno" :value surveyno}]
             (map render-question questions)
-            [:input {:type :submit :value "Submit"}]])]]))
-
+            [:input {:type :submit :value "Submit"}]])
+        [:br]]]))
 
 (defn responder-nojs [{:keys [glossary flash-errors] :as data}]
   (parts/main glossary
