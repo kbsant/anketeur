@@ -1,10 +1,11 @@
 (ns anketeur.view.parts
   (:require
-    [clojure.data.codec.base64 :as base64]
     [anketeur.util.json :as json]
     [anketeur.form :as form]
     [hiccup.core :as hc]
-    [hiccup.page :as page]))
+    [hiccup.page :as page])
+  (:import
+    [org.apache.commons.text StringEscapeUtils]))
 
 (defn js-script [& contents]
   [:script {:type "text/javascript"}
@@ -16,15 +17,15 @@
 (defn js-quot [value]
   (str "'" value "'"))
 
-(defn js-quot-b64 [raw]
-  (-> (.getBytes raw) base64/encode (String. "UTF-8") js-quot))
+(defn js-dquot [value]
+  (str \" value \"))
 
-(defn js-transit-b64 [raw]
-  (-> (json/write-utf8 raw) js-quot-b64))
+(defn escape-json [data]
+  (StringEscapeUtils/escapeJson data))
 
 (defn js-transit-state [name state]
   (js-script
-    (js-var name (js-transit-b64 state))))
+    (js-var name (-> state json/write-utf8 escape-json js-dquot))))
 
 (defn main [glossary headitems content]
   (page/html5
@@ -46,6 +47,7 @@
 (defn appbase [{:keys [glossary servlet-context csrf-token]} headitems content]
   (page/html5
     [:head
+      [:meta {:charset "UTF-8"}]
       [:meta {:http-equiv "Content-Type" :content "text/html; charset=UTF-8"}]
       [:meta {:name "viewport" :content "width=device-width, initial-scale=1.0"}]
       [:link {:rel "shortcut icon" :type "image/png" :href "/img/favicon.png"}]

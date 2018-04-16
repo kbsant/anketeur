@@ -3,7 +3,6 @@
   (:require
     [clojure.core.async :as async :refer [>! <!]]
     [clojure.string :as string]
-    [goog.crypt.base64 :as base64]
     [cognitect.transit :as t]))
 
 (def json-reader (t/reader :json))
@@ -15,15 +14,6 @@
 
 (defn write-json [value]
   (t/write json-writer value))
-
-(defn read-transit-state
-  ([encoded-js-state]
-   (read-transit-state encoded-js-state nil))
-  ([encoded-js-state state-keys]
-   (let [transit-state (read-json (base64/decodeString encoded-js-state))]
-      (if state-keys
-        (select-keys transit-state state-keys)
-        transit-state))))
 
 (defn element-by-id [id]
   (.getElementById js/document id))

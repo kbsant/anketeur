@@ -14,6 +14,7 @@
                  [metosin/muuntaja "0.4.1"]
                  [metosin/ring-http-response "0.9.0"]
                  [mount "0.1.11"]
+                 [org.apache.commons/commons-text "1.3"]
                  [org.clojure/clojure "1.9.0"]
                  [org.clojure/core.async "0.3.443"]
                  [org.clojure/clojurescript "1.9.946" :scope "provided"]

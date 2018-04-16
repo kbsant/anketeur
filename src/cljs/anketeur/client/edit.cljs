@@ -397,7 +397,7 @@
   (r/render [home-page] (.getElementById js/document "app")))
 
 (defn load-transit! []
-  (let [init-state (ui/read-transit-state js/transitState)
+  (let [init-state (ui/read-json js/transitState)
         default-anwer-types (:answer-types model/empty-survey-info)
         init-survey-info (:survey-info init-state)
         survey-info (update init-survey-info :answer-types merge default-anwer-types)

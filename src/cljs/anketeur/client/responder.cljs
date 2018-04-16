@@ -93,7 +93,7 @@
   (r/render [home-page] (.getElementById js/document "app")))
 
 (defn load-transit! []
-  (let [init-state (ui/read-transit-state js/transitState)
+  (let [init-state (ui/read-json js/transitState)
         survey-info (:survey-info init-state)]
     (when survey-info
       (swap! state merge survey-info))))
