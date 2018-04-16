@@ -5,7 +5,7 @@
     [hiccup.core :as hc]
     [hiccup.page :as page])
   (:import
-    [org.apache.commons.text StringEscapeUtils]))
+    org.apache.commons.text.StringEscapeUtils))
 
 (defn js-script [& contents]
   [:script {:type "text/javascript"}
@@ -70,9 +70,10 @@
         [:div.container
           [:div.jumbotron [:h1 (glossary :title)]]
           [:div.three-quarters-loader "Loading… (requires javascript and html5)"]
-          [:noscript
-            [:p "This application requires javascript, but it seems to be disabled. Please enable it and reload."]]]]
-      content]))
+          (or
+            content
+            [:noscript
+              [:p "This application requires javascript, but it seems to be disabled. Please enable it and reload."]])]]]))
 
 (defn spa-appbase [view-data init-state app-js]
   (appbase

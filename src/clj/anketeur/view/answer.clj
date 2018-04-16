@@ -49,15 +49,14 @@
       "transitState"
       {:survey-info survey-info :flash-errors flash-errors})
     (list
+      [:div.container
+        [:p
+          [:a {:href (str "/answernojs/id/" surveyno "/formno/" formno)}
+            "A form is available in plain html (no script)."]]]
       (page/include-js "/js/app.js")
       [:script
         {:type "text/javascript"}
-        "anketeur.client.responder.init();"]
-      [:div.container
-        [:noscript
-          [:p
-           [:a {:href (str "/answernojs/id/" surveyno "/formno/" formno)}
-            "A form without javascript is available."]]]])))
+        "anketeur.client.responder.init();"])))
 
 (defn content-nojs [{:keys [glossary survey-info surveyno formno flash-errors]}]
   (let [questions (model/question-list-view survey-info)
