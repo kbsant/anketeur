@@ -326,24 +326,28 @@
                                    new-answer)
                             (swap! state merge model/empty-custom-answer))}]]])
 
+(defn toggle-edit-question [state pos {:keys [index] :as question}]
+  (let [active (= index (:edit-index @state))]
+    [:div.row
+      [:div.col-xs-1
+        [:input
+          {:type :button
+           :value (if active "*" " ")
+           :on-click (fn []
+                       (swap! state update :edit-index #(if (= % index) -1 index)))}]]
+      [:div.col-xs-11
+        (if active
+          (edit-question state pos question)
+          (form/preview-question @state question))]]))
+
 (defn question-list [state]
   (fn []
     (let [questions (model/question-list-view @state)
-          render-question (if (:question-edit-mode @state) 
-                              (partial edit-question state)
-                              #(form/preview-question @state %2))]
+          render-question (partial toggle-edit-question state)]
       [:div.container
         [:div.row
-          [:span.font-weight-bold (str "Question List (" (count questions) ")")]
-          [:input.mr-1
-            {:type :button
-             :on-click #(swap! state assoc :question-edit-mode false)
-             :value "Preview mode"}]
-          [:input.mr-1
-            {:type :button
-             :on-click #(swap! state assoc :question-edit-mode true)
-             :value "Edit mode"}]]
-        (when-not (empty? questions)
+          [:span.font-weight-bold (str "Question List (" (count questions) ")")]]
+       (when-not (empty? questions)
           (doall
             (map-indexed render-question questions)))])))
 
@@ -365,7 +369,7 @@
           [:li "Allow cut / copy / paste / delete"]]]]
     [question-adder state]
     [:ul
-      [:li "Add/edit a question"
+      [:li "Add a question"
         [:ul
           [:li "Option whether or not to display the item number"]
           [:li "Allow non-question item types like section names and comments."]
