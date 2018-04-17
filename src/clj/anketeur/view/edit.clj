@@ -14,7 +14,7 @@
 (defn editor [data]
   (parts/appbase
     data
-    (parts/js-transit-state
+    (parts/js-transit-var
       "transitState"
       (select-keys data [:survey-info :response-link-base :export-link-base :flash-errors]))
     (list

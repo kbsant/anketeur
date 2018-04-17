@@ -45,7 +45,7 @@
 (defn responder [{:keys [survey-info surveyno formno flash-errors] :as data}]
   (parts/appbase
     data
-    (parts/js-transit-state
+    (parts/js-transit-var
       "transitState"
       {:survey-info survey-info :flash-errors flash-errors})
     (list

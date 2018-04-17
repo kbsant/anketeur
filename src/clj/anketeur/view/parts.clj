@@ -23,9 +23,9 @@
 (defn escape-json [data]
   (StringEscapeUtils/escapeJson data))
 
-(defn js-transit-state [name state]
+(defn js-transit-var [name value]
   (js-script
-    (js-var name (-> state json/write-utf8 escape-json js-dquot))))
+    (js-var name (-> value json/write-utf8 escape-json js-dquot))))
 
 (defn main [glossary headitems content]
   (page/html5
@@ -78,7 +78,7 @@
 (defn spa-appbase [view-data init-state app-js]
   (appbase
     view-data
-    (js-transit-state
+    (js-transit-var
       "transitState"
       init-state)
     (list
