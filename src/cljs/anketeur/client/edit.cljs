@@ -15,7 +15,6 @@
 (defonce state
   (r/atom
     (merge
-      model/empty-question
       model/empty-custom-answer
       model/empty-survey-info)))
 
@@ -108,14 +107,10 @@
            :value description
            :on-change (event/assoc-with-js-value state :description)}]]]]))
 
-(defn build-current-question
-  [{:keys [current-question-text current-answer-type current-required current-allow-na current-skip]}]
-  (when-not (string/blank? current-question-text)
-    {:question-text current-question-text
-     :answer-type current-answer-type
-     :allow-na current-allow-na
-     :skip current-skip
-     :required current-required}))
+(defn build-question
+  [{:keys [question-text] :as question}]
+  (when-not (string/blank? question-text)
+    (dissoc question :index)))
 
 (defn render-select-options
   "Given a map of answer types, render a list of options
@@ -129,62 +124,25 @@
             ^{:key i}
             [:option option-text]))))
 
-
-(defn question-adder [state]
-  [:div.container
-    [:div.row  [:span.font-weight-bold "Add a question"]]
-    [:div.row
-      [:input.mr-1
-        {:type :text
-         :value (:current-question-text @state)
-         :placeholder "Question"
-         :on-change (event/assoc-with-js-value state :current-question-text)}]
-      [:select.mr-1
-        {:value (:current-answer-type @state)
-         :on-change (event/assoc-with-js-value state :current-answer-type)}
-        (render-select-options (:answer-types @state))]
-      [:label.mr-1
-        [:input.mr-1
-          {:type :checkbox
-           :checked (:current-required @state)
-           :value (:current-required @state)
-           :on-change #(swap! state update :current-required not)}]
-        "Require an answer"]
-      [:label.mr-1
-        [:input.mr-1
-          {:type :checkbox
-           :checked (:current-allow-na @state)
-           :value (:current-allow-na @state)
-           :on-change #(swap! state update :current-allow-na not)}]
-        "Provide Not Applicable"]
-      [:label.mr-1
-        [:input.mr-1
-          {:type :checkbox
-           :checked (:current-skip @state)
-           :value (:current-skip @state)
-           :on-change #(swap! state update :current-skip not)}]
-        "Skip numbering (child item)"]
-      [:input {:type :button
-               :value "Add"
-               :on-click #(when-let [q (build-current-question @state)]
-                            (swap! state model/add-question q)
-                            (swap! state merge model/empty-question))}]]])
-
 (defn edit-question
   [state ord question]
   (let [{:keys [pos question-text answer-type required allow-na skip index]}
-        (merge model/new-question question)]
+        (merge model/blank-question question)]
     ^{:key index}
     [:div.container
       [:div.row
-        [:input.mr-1
-         {:type :button
-          :value "↑"
-          :on-click #(swap! state update :question-list vswap (dec ord) ord)}]
-        [:input.mr-1
-         {:type :button
-          :value "↓"
-          :on-click #(swap! state update :question-list vswap ord (inc ord))}]
+        (when-not (= :new-question index)
+          (list
+            ^{:key (str index ".1")}
+            [:input.mr-1
+             {:type :button
+              :value "↑"
+              :on-click #(swap! state update :question-list vswap (dec ord) ord)}]
+            ^{:key (str index ".2")}
+            [:input.mr-1
+             {:type :button
+              :value "↓"
+              :on-click #(swap! state update :question-list vswap ord (inc ord))}]))
         [:span.mr-1.font-weight-bold (str pos)]
         [:input.mr-1
           {:type :text
@@ -229,6 +187,17 @@
                           [:question-map index :skip]
                           not)}]
           "Skip numbering (child item)"]]]))
+
+(defn question-adder [state]
+  (let [new-question (model/get-new-question @state)]
+    [:div.container
+      [:div.row  [:span.font-weight-bold "Add a question"]
+        (edit-question state 0 new-question)]
+      [:input {:type :button
+               :value "Add"
+               :on-click #(when-let [q (build-question (model/get-new-question @state))]
+                            (swap! state model/add-question q)
+                            (swap! state assoc-in [:question-map :new-question] model/new-question))}]]))
 
 (defn answer-text-input-fn [state]
   (let [custom-answer-text-input (concat (:custom-answer-text-input @state) [""])]

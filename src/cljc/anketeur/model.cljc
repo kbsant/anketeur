@@ -34,19 +34,15 @@
    :predefined true
    :template :static})
 
-(def empty-question
-  {:current-question-text ""
-   :current-answer-type (:option-text yes-no-option)
-   :current-skip false
-   :current-required false
-   :current-allow-na false})
-
-(def new-question
+(def blank-question
   {:question-text ""
    :answer-type (:option-text yes-no-option)
    :skip false
    :required false
    :allow-na false})
+
+(def new-question
+  (assoc blank-question :index :new-question))
 
 (defn map-with-key
   "Transform a sequence ({:k k1 ...}, {:k k2 ...}...)
@@ -73,7 +69,7 @@
        :client-state {}
        :question-list []
        :question-map
-        {:new-question (assoc new-question :index :new-question)}
+        {:new-question new-question}
        :answer-types
         (map-with-key
           :option-text
@@ -107,6 +103,9 @@
        keys
        count
        str))
+
+(defn get-new-question [state-info]
+  (get-in state-info [:question-map :new-question]))
 
 (defn add-question
   "Add a question to both the question index and list.
