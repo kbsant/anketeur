@@ -124,81 +124,6 @@
             ^{:key i}
             [:option option-text]))))
 
-(defn edit-question
-  [state ord question]
-  (let [{:keys [pos question-text answer-type required allow-na skip index]}
-        (merge model/blank-question question)]
-    ^{:key index}
-    [:div.container
-      [:div.row
-        (when-not (= :new-question index)
-          (list
-            ^{:key (str index ".1")}
-            [:input.mr-1
-             {:type :button
-              :value "↑"
-              :on-click #(swap! state update :question-list vswap (dec ord) ord)}]
-            ^{:key (str index ".2")}
-            [:input.mr-1
-             {:type :button
-              :value "↓"
-              :on-click #(swap! state update :question-list vswap ord (inc ord))}]))
-        [:span.mr-1.font-weight-bold (str pos)]
-        [:input.mr-1
-          {:type :text
-           :value question-text
-           :placeholder "Question"
-           :on-change (event/assoc-in-with-js-value
-                        state
-                        [:question-map index :question-text])}]
-        [:select.mr-1
-          {:value answer-type
-           :on-change (event/assoc-in-with-js-value
-                        state
-                        [:question-map index :answer-type])}
-          (render-select-options (:answer-types @state))]
-        [:label.mr-1
-          [:input.mr-1
-            {:type :checkbox
-             :checked required
-             :value required
-             :on-change #(swap!
-                          state update-in
-                          [:question-map index :required]
-                          not)}]
-          "Require an answer"]
-        [:label.mr-1
-          [:input.mr-1
-            {:type :checkbox
-             :checked allow-na
-             :value allow-na
-             :on-change #(swap!
-                          state update-in
-                          [:question-map index :allow-na]
-                          not)}]
-          "Provide Not Applicable"]
-        [:label.mr-1
-          [:input.mr-1
-            {:type :checkbox
-             :checked skip
-             :value skip
-             :on-change #(swap!
-                          state update-in
-                          [:question-map index :skip]
-                          not)}]
-          "Skip numbering (child item)"]]]))
-
-(defn question-adder [state]
-  (let [new-question (model/get-new-question @state)]
-    [:div.container
-      [:div.row  [:span.font-weight-bold "Add a question"]
-        (edit-question state 0 new-question)]
-      [:input {:type :button
-               :value "Add"
-               :on-click #(when-let [q (build-question (model/get-new-question @state))]
-                            (swap! state model/add-question q)
-                            (swap! state assoc-in [:question-map :new-question] model/new-question))}]]))
-
 (defn answer-text-input-fn [state]
   (let [custom-answer-text-input (concat (:custom-answer-text-input @state) [""])]
    [:form
@@ -295,7 +220,83 @@
                                    new-answer)
                             (swap! state merge model/empty-custom-answer))}]]])
 
-(defn toggle-edit-question [state pos {:keys [index] :as question}]
+(defn edit-question
+  [state ord question]
+  (let [{:keys [pos question-text answer-type required allow-na skip index]}
+        (merge model/blank-question question)
+        new-question? (= :new-question index)]
+    ^{:key index}
+    [:div.container
+      [:div.row
+        (when-not new-question?
+          (list
+            ^{:key (str index ".btn.up")}
+            [:input.mr-1
+             {:type :button
+              :value "↑"
+              :on-click #(swap! state update :question-list vswap (dec ord) ord)}]
+            ^{:key (str index ".btn.down")}
+            [:input.mr-1
+             {:type :button
+              :value "↓"
+              :on-click #(swap! state update :question-list vswap ord (inc ord))}]))
+        [:span.mr-1.font-weight-bold (str pos)]
+        [:input.mr-1
+          {:type :text
+           :value question-text
+           :placeholder "Question"
+           :on-change (event/assoc-in-with-js-value
+                        state
+                        [:question-map index :question-text])}]
+        [:label.mr-1
+          [:input.mr-1
+            {:type :checkbox
+             :checked required
+             :value required
+             :on-change #(swap!
+                          state update-in
+                          [:question-map index :required]
+                          not)}]
+          "Require an answer"]
+        [:label.mr-1
+          [:input.mr-1
+            {:type :checkbox
+             :checked allow-na
+             :value allow-na
+             :on-change #(swap!
+                          state update-in
+                          [:question-map index :allow-na]
+                          not)}]
+          "Provide Not Applicable"]
+        [:label.mr-1
+          [:input.mr-1
+            {:type :checkbox
+             :checked skip
+             :value skip
+             :on-change #(swap!
+                          state update-in
+                          [:question-map index :skip]
+                          not)}]
+          "Skip numbering (child item)"]
+        [:select.mr-1
+          {:value answer-type
+           :on-change (event/assoc-in-with-js-value
+                        state
+                        [:question-map index :answer-type])}
+          (render-select-options (:answer-types @state))]
+       [:div.row
+        [answer-customizer state]]]]))
+
+(defn question-adder [state]
+  (let [new-question (model/get-new-question @state)]
+    [:div.container
+     #_ [:div.row  [:span.font-weight-bold "Add a question"]
+         (edit-question state 0 new-question)]
+      [:input {:type :button
+               :value "Add"
+               :on-click #(swap! state model/add-question model/new-question)}]]))
+
+(defn toggle-edit-question [state ord {:keys [index] :as question}]
   (let [active (= index (:edit-index @state))]
     [:div.row
       [:div.col-xs-1
@@ -306,7 +307,7 @@
                        (swap! state update :edit-index #(if (= % index) -1 index)))}]]
       [:div.col-xs-11
         (if active
-          (edit-question state pos question)
+          (edit-question state ord question)
           (form/preview-question @state question))]]))
 
 (defn question-list [state]
@@ -334,7 +335,7 @@
     [:ul
       [:li "Questions"
         [:ul
-          [:li "Allow move up/down"]
+          [:li "Undo / redo"]
           [:li "Allow cut / copy / paste / delete"]]]]
     [question-adder state]
     [:ul
@@ -342,7 +343,6 @@
         [:ul
           [:li "Add/edit an answer type"]
           [:li "Validate/sanitize free text fields, numbers, dates"]]]]
-    [answer-customizer state]
     [:ul
       [:li "Add/edit types of answers"
         [:ul
