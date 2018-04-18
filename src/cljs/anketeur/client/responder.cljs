@@ -87,7 +87,8 @@
   [:div.container
     [save-control-group "save-top" state]
     [question-list state]
-    [save-control-group "save-bottom" state]])
+    [save-control-group "save-bottom" state]
+    [:br]])
 
 (defn mount-components []
   (r/render [home-page] (.getElementById js/document "app")))

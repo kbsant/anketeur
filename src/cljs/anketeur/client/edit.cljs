@@ -132,7 +132,7 @@
 
 (defn question-adder [state]
   [:div.container
-    [:div.row  [:span.font-weight-bold "Add/edit a question"]]
+    [:div.row  [:span.font-weight-bold "Add a question"]]
     [:div.row
       [:input.mr-1
         {:type :text
@@ -332,7 +332,7 @@
       [:div.col-xs-1
         [:input
           {:type :button
-           :value (if active "*" " ")
+           :value (if active "»" " ")
            :on-click (fn []
                        (swap! state update :edit-index #(if (= % index) -1 index)))}]]
       [:div.col-xs-11
@@ -371,21 +371,14 @@
     [:ul
       [:li "Add a question"
         [:ul
-          [:li "Option whether or not to display the item number"]
-          [:li "Allow non-question item types like section names and comments."]
-          [:li "Indent an item and optionally show bullet points instead of item numbers"]
-          [:li "Set the type of answer to the question"]
-          [:li "Set whether the question requires an answer or not"]
-          [:li "Provide Not Applicable as an answer"]
+          [:li "Add/edit an answer type"]
           [:li "Validate/sanitize free text fields, numbers, dates"]]]]
     [answer-customizer state]
     [:ul
       [:li "Add/edit types of answers"
         [:ul
-          [:li "Customize single selection answers"]
-          [:li "Customize multiple selection answers"]
           [:li "Customize named scale 1 (Least something*) to n (Most something*)"]
-          [:li "Ranking of items -- drag and drop? move up/down?"]
+          [:li "Sorting/Ranking of drop-down items -- drag and drop? move up/down?"]
           [:li "Add drop-down to select an answer type to edit"]
           [:li "Don't edit predefined answer types"
             [:ul
