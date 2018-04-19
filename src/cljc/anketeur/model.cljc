@@ -115,7 +115,8 @@
         question-info (assoc question :index question-id)]
     (-> state-info
       (assoc-in [:question-map question-id] question-info)
-      (update :question-list conj question-id))))
+      (update :question-list conj question-id)
+      (assoc :edit-index question-id))))
 
 (defn add-coll-answers [answers {:keys [index] :as question-info}]
   (let [coll-answers (map #(get % (str index)) answers)]

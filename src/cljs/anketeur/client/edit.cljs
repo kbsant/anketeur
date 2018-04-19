@@ -227,19 +227,17 @@
         new-question? (= :new-question index)]
     ^{:key index}
     [:div.container
+      (when-not new-question?
+        [:div.row
+          [:input.mr-1.mb-1
+           {:type :button
+            :value "↑"
+            :on-click #(swap! state update :question-list vswap (dec ord) ord)}]
+          [:input.mr-1.mb-1
+           {:type :button
+            :value "↓"
+            :on-click #(swap! state update :question-list vswap ord (inc ord))}]])
       [:div.row
-        (when-not new-question?
-          (list
-            ^{:key (str index ".btn.up")}
-            [:input.mr-1
-             {:type :button
-              :value "↑"
-              :on-click #(swap! state update :question-list vswap (dec ord) ord)}]
-            ^{:key (str index ".btn.down")}
-            [:input.mr-1
-             {:type :button
-              :value "↓"
-              :on-click #(swap! state update :question-list vswap ord (inc ord))}]))
         [:span.mr-1.font-weight-bold (str pos)]
         [:input.mr-1
           {:type :text
@@ -290,10 +288,9 @@
 (defn question-adder [state]
   (let [new-question (model/get-new-question @state)]
     [:div.container
-     #_ [:div.row  [:span.font-weight-bold "Add a question"]
-         (edit-question state 0 new-question)]
+      [:br]
       [:input {:type :button
-               :value "Add"
+               :value "Add a new question"
                :on-click #(swap! state model/add-question model/new-question)}]]))
 
 (defn toggle-edit-question [state ord {:keys [index] :as question}]
@@ -332,12 +329,12 @@
           [:li "import/export EDN"]
           [:li "publish questionnaire"]]]]
     [question-list state]
+    [question-adder state]
     [:ul
       [:li "Questions"
         [:ul
           [:li "Undo / redo"]
           [:li "Allow cut / copy / paste / delete"]]]]
-    [question-adder state]
     [:ul
       [:li "Add a question"
         [:ul
