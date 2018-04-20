@@ -118,85 +118,61 @@
             ^{:key i}
             [:option (when custom-index {:value custom-index}) option-text]))))
 
-(defn answer-text-input-fn [state]
-  (let [{:keys [edit-index answer-types] :as state-info} @state
-        answer-index (get-in state-info [:question-map edit-index :answer-type])
-        answer-type (get answer-types answer-index)
-        param-values (get-in answer-type [:params :values])
-        custom-answer-text-input (concat param-values [""])]
-   [:form
-    (map-indexed
-      (fn [i v]
-        ^{:key i}
-        [:input.mr-1
-          {:type :text
-           :placeholder "Answer text"
-           :value v
-           :on-change
-            (event/assoc-in-with-js-value
-              state
-              [:custom-answer-text-input i])}])
-      custom-answer-text-input)]))
+(defn update-text-answer-params [pos values text]
+  (as-> values $
+        (assoc $ pos text)
+        (remove clojure.string/blank? $)
+        (into [] $)))
 
-(defn answer-text-value-fn [state-info]
-  (let [value (:custom-answer-text-input state-info)]
-    (when (and
-            (seq value)
-            (not (string/blank? (first value))))
-      value)))
+(defn answer-text-input-fn [state custom-index {:keys [values] :as params}]
+  (let [custom-answer-text-input (concat values [""])]
+    [:form
+      (map-indexed
+        (fn [i v]
+          ^{:key i}
+          [:input.mr-1
+            {:type :text
+             :placeholder "Answer text"
+             :value v
+             :on-change
+              (event/update-in-with-js-value
+                state
+                [:answer-types custom-index :params :values]
+                (partial update-text-answer-params i))}])
+        custom-answer-text-input)]))
 
-(defn answer-num-input-fn [state]
-  [:input.mr-1 {:type :number
-                :min 2
-                :max 20
-                :placeholder "Max rating"
-                :value (:custom-answer-num-input @state)
-                :on-change
-                  (event/assoc-with-js-value
-                    state
-                    :custom-answer-num-input)}])
+(defn update-num-answer-params [params value]
+  (let [max (when value (js/parseInt value))
+        values (when max (into [] (map str (range 1 (inc max)))))]
+    (merge
+      params
+      {:values values
+       :range [max]})))
 
-(defn answer-num-value-fn [state-info]
-  (let [value (:custom-answer-num-input state-info)
-        max (and value (js/parseInt value))]
-    (when max
-      (into [] (map str (range 1 (inc max)))))))
+(defn answer-num-input-fn [state custom-index params]
+  (let [default-value 5
+        value (get-in params [:range 0] default-value)]
+    [:input.mr-1
+      {:type :number
+       :min 2
+       :max 20
+       :placeholder "Max rating"
+       :value value
+       :on-change
+          (event/update-in-with-js-value
+            state
+            [:answer-types custom-index :params]
+            update-num-answer-params)}]))
 
-(def custom-answer-input-fn
-  {:text
-    {:render-fn answer-text-input-fn
-     :value-fn answer-text-value-fn}
-   :rating
-    {:render-fn answer-num-input-fn
-     :value-fn answer-num-value-fn}})
+(def answer-param-input-renderers
+  {:text answer-text-input-fn
+   :rating answer-num-input-fn})
 
-(defn build-custom-answer
-  [{:keys [custom-answer-type custom-answer-name custom-answer-params answer-types]
-    :as state-info}]
-  (let [template (get-in model/answer-template-options [custom-answer-type :template])
-        param-type (get-in model/answer-template-options [custom-answer-type :param-type])
-        value-fn (get-in custom-answer-input-fn [param-type :value-fn])
-        custom-answer-params (value-fn state-info)
-        index (->> answer-types vals (map :index) (concat [0]) last)]
-    (when (and
-            (not (string/blank? custom-answer-name))
-            (seq custom-answer-params)
-            template index)
-      {:option-text custom-answer-name
-       :index index
-       :template template
-       :params {:values custom-answer-params}})))
-
-(defn render-custom-answer-input [state]
-  (let [custom-answer-type (:custom-answer-type @state)
-        param-type (get-in model/answer-template-options [custom-answer-type :param-type])
-        render-fn (get-in custom-answer-input-fn [param-type :render-fn])]
+(defn answer-param-customizer [state current-answer]
+  (let [{:keys [custom-index custom-template param-type params]} current-answer
+        render-fn (get answer-param-input-renderers param-type)]
     (when render-fn
-      (render-fn state))))
-
-(defn answer-param-customizer
-  [state question-index {:keys [custom-template] :as current-answer}]
-  [:p "[Edit boxes for custom params here]"])
+      (render-fn state custom-index params))))
 
 (defn answer-customizer [state]
   (let [question-index (:edit-index @state)
@@ -225,7 +201,7 @@
             (when custom-template {:value custom-template}))
           (render-select-options model/answer-template-options)]]
       [:div.row
-        (answer-param-customizer state question-index current-answer)]]))
+        (answer-param-customizer state current-answer)]]))
 
 (defn add-answer-type!
   "Add a blank answer type and return the index."

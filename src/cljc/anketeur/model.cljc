@@ -79,16 +79,18 @@
       :option-text "Rating"
       :template :radio
       :param-type :rating
-      :params {:range []}}]))
+      :params {:range [5]}}]))
 
-(defn merge-from-template [target custom-template]
+(defn merge-from-template
+  "Set the template of the target. Preserve the params if already set."
+  [target custom-template]
   (let [base (select-keys
                (get answer-template-options custom-template)
-               [:template :param-type :params])]
-    (merge
-      target
-      base
-      (when base {:custom-template custom-template}))))
+               [:template :param-type :params])
+        save-params (or (:params target) (:params base))]
+    (-> target
+        (merge base {:custom-template custom-template})
+        (assoc :params save-params))))
 
 (def empty-survey-info
       {:surveyname ""
