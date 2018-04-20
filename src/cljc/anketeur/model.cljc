@@ -65,16 +65,30 @@
 (def answer-template-options
   (map-with-key
     :option-text
-    [{:index 0, :option-text "Single selection", :template :radio, :param-type :text}
-     {:index 1, :option-text "Multiple selection", :template :checkbox, :param-type :text}
-     {:index 2, :option-text "Rating", :template :radio, :param-type :rating}]))
+    [{:index 0
+      :option-text "Single selection"
+      :template :radio
+      :param-type :text
+      :params {:values []}}
+     {:index 1
+      :option-text "Multiple selection"
+      :template :checkbox
+      :param-type :text
+      :params {:values []}}
+     {:index 2
+      :option-text "Rating"
+      :template :radio
+      :param-type :rating
+      :params {:range []}}]))
 
-(def empty-custom-answer
-  {:custom-answer-name ""
-   :custom-answer-num-input nil
-   :custom-answer-text-input [""]
-   :custom-answer-type (first (keys answer-template-options))
-   :custom-answer-items []})
+(defn merge-from-template [target custom-template]
+  (let [base (select-keys
+               (get answer-template-options custom-template)
+               [:template :param-type :params])]
+    (merge
+      target
+      base
+      (when base {:custom-template custom-template}))))
 
 (def empty-survey-info
       {:surveyname ""

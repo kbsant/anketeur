@@ -15,7 +15,6 @@
 (defonce state
   (r/atom
     (merge
-      model/empty-custom-answer
       model/empty-survey-info)))
 
 (defn doc-from-state [state-info]
@@ -44,10 +43,10 @@
     (POST
       "/save"
       {:params {:survey-info doc}
-       ;; TODO fade out after saving
        :handler #(do (swap! state assoc-in [:client-state :save-status] %)
                      (fade-save-status state)
                      (when handler-fn (handler-fn)))
+       ;; TODO dont fade out error after saving
        :error-handler #(swap! state assoc-in [:client-state :save-status] (str %))}))))
 
 (defn save-and-export! [uri]
@@ -120,7 +119,11 @@
             [:option (when custom-index {:value custom-index}) option-text]))))
 
 (defn answer-text-input-fn [state]
-  (let [custom-answer-text-input (concat (:custom-answer-text-input @state) [""])]
+  (let [{:keys [edit-index answer-types] :as state-info} @state
+        answer-index (get-in state-info [:question-map edit-index :answer-type])
+        answer-type (get answer-types answer-index)
+        param-values (get-in answer-type [:params :values])
+        custom-answer-text-input (concat param-values [""])]
    [:form
     (map-indexed
       (fn [i v]
@@ -167,16 +170,6 @@
     {:render-fn answer-num-input-fn
      :value-fn answer-num-value-fn}})
 
-(defn merge-from-template [target custom-template]
-  (let [template (get-in model/answer-template-options [custom-template :template])
-        param-type (get-in model/answer-template-options [custom-template :param-type])]
-    (merge
-      target
-      (when (and template param-type))
-      {:template template
-       :custom-template custom-template
-       :param-type param-type})))
-
 (defn build-custom-answer
   [{:keys [custom-answer-type custom-answer-name custom-answer-params answer-types]
     :as state-info}]
@@ -201,6 +194,10 @@
     (when render-fn
       (render-fn state))))
 
+(defn answer-param-customizer
+  [state question-index {:keys [custom-template] :as current-answer}]
+  [:p "[Edit boxes for custom params here]"])
+
 (defn answer-customizer [state]
   (let [question-index (:edit-index @state)
         answer-index (get-in @state [:question-map question-index :answer-type])
@@ -224,11 +221,11 @@
              :on-change (event/update-in-with-js-value
                           state
                           [:answer-types answer-index]
-                          merge-from-template)}
+                          model/merge-from-template)}
             (when custom-template {:value custom-template}))
           (render-select-options model/answer-template-options)]]
       [:div.row
-        [render-custom-answer-input state]]]))
+        (answer-param-customizer state question-index current-answer)]]))
 
 (defn add-answer-type!
   "Add a blank answer type and return the index."
