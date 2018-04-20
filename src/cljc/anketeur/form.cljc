@@ -2,8 +2,6 @@
   (:require
     [clojure.string :as string]))
 
-(def wide-space "　")
-
 (defn navbar [contents]
   [:div.container.navbar contents])
 
@@ -64,7 +62,7 @@
   [state-info
    {:keys [index pos question-text answer-type required allow-na] :as question}
    handler]
-  ^{:key index}
+  ^{:key (str "q." index)}
   [:div.row
       [:p
         [:span.mr-1.font-weight-bold (str pos)]

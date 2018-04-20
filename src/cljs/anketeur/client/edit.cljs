@@ -107,11 +107,6 @@
            :value description
            :on-change (event/assoc-with-js-value state :description)}]]]]))
 
-(defn build-question
-  [{:keys [question-text] :as question}]
-  (when-not (string/blank? question-text)
-    (dissoc question :index)))
-
 (defn render-select-options
   "Given a map of answer types, render a list of options
   by taking the values sorted by index."
@@ -120,9 +115,9 @@
        vals
        (sort (comp < :index))
        (map-indexed
-          (fn [i {:keys [option-text]}]
+          (fn [i {:keys [custom-index option-text]}]
             ^{:key i}
-            [:option option-text]))))
+            [:option (when custom-index {:value custom-index}) option-text]))))
 
 (defn answer-text-input-fn [state]
   (let [custom-answer-text-input (concat (:custom-answer-text-input @state) [""])]
@@ -172,6 +167,16 @@
     {:render-fn answer-num-input-fn
      :value-fn answer-num-value-fn}})
 
+(defn merge-from-template [target custom-template]
+  (let [template (get-in model/answer-template-options [custom-template :template])
+        param-type (get-in model/answer-template-options [custom-template :param-type])]
+    (merge
+      target
+      (when (and template param-type))
+      {:template template
+       :custom-template custom-template
+       :param-type param-type})))
+
 (defn build-custom-answer
   [{:keys [custom-answer-type custom-answer-name custom-answer-params answer-types]
     :as state-info}]
@@ -197,46 +202,63 @@
       (render-fn state))))
 
 (defn answer-customizer [state]
-  [:div.container
-    [:div.row [:span.font-weight-bold "Add/edit a custom answer type"]]
-    [:div.row
-      [:input.mr-1
-       {:type :text
-        :placeholder "Name of the answer type"
-        :value (:custom-answer-name @state)
-        :on-change (event/assoc-with-js-value state :custom-answer-name)}]
-      [:select
-        {:value (:custom-answer-type @state)
-         :on-change (event/assoc-with-js-value state :custom-answer-type)}
-        (render-select-options model/answer-template-options)]]
-    [:div.row
-      [render-custom-answer-input state]
-      [:input {:type :button
-               :value "Add"
-               :on-click #(when-let [new-answer (build-custom-answer @state)]
-                            (swap! state
-                                   assoc-in
-                                   [:answer-types (:option-text new-answer)]
-                                   new-answer)
-                            (swap! state merge model/empty-custom-answer))}]]])
+  (let [question-index (:edit-index @state)
+        answer-index (get-in @state [:question-map question-index :answer-type])
+        current-answer (get-in @state [:answer-types answer-index])
+        custom-template (:custom-template current-answer)
+        predefined? (true? (:predefined current-answer))]
+    [:div.container
+      [:div.row [:span.font-weight-bold "Custom answer type"]]
+      [:div.row
+        [:input.mr-1
+          {:type :text
+           :disabled predefined?
+           :placeholder "Name of the answer type"
+           :value (:option-text current-answer)
+           :on-change (event/assoc-in-with-js-value
+                        state
+                        [:answer-types answer-index :option-text])}]
+        [:select
+          (merge
+            {:disabled predefined?
+             :on-change (event/update-in-with-js-value
+                          state
+                          [:answer-types answer-index]
+                          merge-from-template)}
+            (when custom-template {:value custom-template}))
+          (render-select-options model/answer-template-options)]]
+      [:div.row
+        [render-custom-answer-input state]]]))
+
+(defn add-answer-type!
+  "Add a blank answer type and return the index."
+  [state]
+  (let [new-state (swap! state model/add-answer-type model/blank-option)
+        question-index (:edit-index new-state)]
+    (get-in new-state [:question-map question-index :answer-type])))
+
+(defn select-answer-type [question-index ev]
+  (let [value (event/target-value ev)
+        answer-index (if-not (= "custom-answer-type" value)
+                        value
+                        (add-answer-type! state))]
+      (swap! state assoc-in [:question-map question-index :answer-type] answer-index)))
 
 (defn edit-question
   [state ord question]
   (let [{:keys [pos question-text answer-type required allow-na skip index]}
-        (merge model/blank-question question)
-        new-question? (= :new-question index)]
+        (merge model/blank-question question)]
     ^{:key index}
     [:div.container
-      (when-not new-question?
-        [:div.row
-          [:input.mr-1.mb-1
-           {:type :button
-            :value "↑"
-            :on-click #(swap! state update :question-list vswap (dec ord) ord)}]
-          [:input.mr-1.mb-1
-           {:type :button
-            :value "↓"
-            :on-click #(swap! state update :question-list vswap ord (inc ord))}]])
+      [:div.row
+        [:input.mr-1.mb-1
+         {:type :button
+          :value "↑"
+          :on-click #(swap! state update :question-list vswap (dec ord) ord)}]
+        [:input.mr-1.mb-1
+         {:type :button
+          :value "↓"
+          :on-click #(swap! state update :question-list vswap ord (inc ord))}]]
       [:div.row
         [:span.mr-1.font-weight-bold (str pos)]
         [:input.mr-1
@@ -278,12 +300,10 @@
           "Skip numbering (child item)"]
         [:select.mr-1
           {:value answer-type
-           :on-change (event/assoc-in-with-js-value
-                        state
-                        [:question-map index :answer-type])}
-          (render-select-options (:answer-types @state))]
-       [:div.row
-        [answer-customizer state]]]]))
+           :on-change (partial select-answer-type index)}
+          (render-select-options (:answer-types @state))]]
+      [:div.row
+        [answer-customizer state]]]))
 
 (defn question-adder [state]
   (let [new-question (model/get-new-question @state)]
@@ -295,6 +315,7 @@
 
 (defn toggle-edit-question [state ord {:keys [index] :as question}]
   (let [active (= index (:edit-index @state))]
+    ^{:key index}
     [:div.row
       [:div.col-xs-1
         [:input
@@ -314,7 +335,7 @@
       [:div.container
         [:div.row
           [:span.font-weight-bold (str "Question List (" (count questions) ")")]]
-       (when-not (empty? questions)
+        (when-not (empty? questions)
           (doall
             (map-indexed render-question questions)))])))
 
@@ -351,7 +372,9 @@
               [:li "Yes / No"]
               [:li "Strongly disagree .. Strongly agree (5 levels)"]
               [:li "Free text"]]]]]]
-    [save-button-status state]])
+    [save-button-status state]
+    [:p (str "edit question:" (let [i (:edit-index @state)] (get-in @state [:question-map i])))]
+    [:p (str "answer types:" (:answer-types @state))]])
 
 ; -------------------------
 ;; Initialize app

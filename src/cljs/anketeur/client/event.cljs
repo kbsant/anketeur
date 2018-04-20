@@ -17,5 +17,5 @@
 
 (defn update-in-with-js-value [state keys fun]
   (fn [ev]
-    (swap! state update keys fun (target-value ev))))
+    (swap! state update-in keys fun (target-value ev))))
 

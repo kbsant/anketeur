@@ -34,6 +34,18 @@
    :predefined true
    :template :static})
 
+(def add-custom-option
+  {:option-text "(Add custom answer)"
+   :custom-index "custom-answer-type"
+   :index 99
+   :predefined true
+   :template :static})
+
+(def blank-option
+  {:option-text "(New answer type)"
+   :custom-template "Single selection"
+   :template :static})
+
 (def blank-question
   {:question-text ""
    :answer-type (:option-text yes-no-option)
@@ -73,7 +85,7 @@
        :answer-types
         (map-with-key
           :option-text
-          [yes-no-option agree-disagree-5-levels-option rating-5-levels-option text-area-option static-option])})
+          [yes-no-option agree-disagree-5-levels-option rating-5-levels-option text-area-option static-option add-custom-option])})
 
 (defn outline-pos
   "Assign a numerical position to each question in a map, ordered by a list of indices.
@@ -98,8 +110,11 @@
     (let [outlined-map (outline-pos question-map question-list 1)]
       (map outlined-map question-list))))
 
-(defn next-question-id [question-map]
-  (->> question-map
+(defn item-list-view [item-map item-list]
+  (->> item-list (map (partial get item-map)) (filter some?)))
+
+(defn next-item-id [item-map]
+  (->> item-map
        keys
        count
        str))
@@ -111,12 +126,24 @@
   "Add a question to both the question index and list.
   To update the state, use this function with swap! ."
   [state-info question]
-  (let [question-id (next-question-id (:question-map state-info))
+  (let [question-id (next-item-id (:question-map state-info))
         question-info (assoc question :index question-id)]
     (-> state-info
       (assoc-in [:question-map question-id] question-info)
       (update :question-list conj question-id)
       (assoc :edit-index question-id))))
+
+;; TODO could refactor this - common logic with add-question
+(defn add-answer-type
+  "Add a question to both the question index and list.
+  To update the state, use this function with swap! ."
+  [state-info item]
+  (let [answer-id (str (next-item-id (:answer-types state-info)))
+        edit-question-id (:edit-index state-info)
+        answer-info (assoc item :custom-index answer-id)]
+    (-> state-info
+      (assoc-in [:answer-types answer-id] answer-info)
+      (assoc-in [:question-map edit-question-id :answer-type] answer-id))))
 
 (defn add-coll-answers [answers {:keys [index] :as question-info}]
   (let [coll-answers (map #(get % (str index)) answers)]
