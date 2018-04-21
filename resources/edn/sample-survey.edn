@@ -1,10 +1,6 @@
 {:current-skip false,
  :description "A survey to help improve online survey tools.",
- :custom-answer-text-input [""],
  :surveyname "Sample Survey",
- :current-question-text "",
- :custom-answer-items [],
- :custom-answer-type "Single selection",
  :roles nil,
  :question-map
  {"9"
@@ -95,12 +91,8 @@
    :required false,
    :allow-na false,
    :index :new-question}},
- :custom-answer-name "",
  :question-list ["1" "2" "4" "3" "5" "7" "8" "9" "10" "11" "6"],
  :question-edit-mode false,
- :current-allow-na false,
- :current-required false,
- :custom-answer-num-input nil,
  :surveyno #uuid "48b03cd7-247f-47f1-b931-5cf22b510741",
  :answer-types
  {"Yes / No"
@@ -135,7 +127,10 @@
   "Survey apps"
   {:option-text "Survey apps",
    :index 3,
+   :custom-index "Survey apps",
+   :custom-template "Multiple selection",
    :template :checkbox,
+   :param-type :text,
    :params
    {:values
     ["Web browser"
@@ -145,12 +140,18 @@
   "Devices"
   {:option-text "Devices",
    :index 3,
+   :custom-index "Devices",
+   :custom-template "Multiple selection",
    :template :checkbox,
+   :param-type :text,
    :params {:values ["Desktop/Notebook" "Tablet" "Phone"]}},
   "Browsers"
   {:option-text "Browsers",
    :index 3,
+   :custom-index "Browsers",
+   :custom-template "Multiple selection",
    :template :checkbox,
+   :param-type :text,
    :params
    {:values
     ["IE 11 or below "
@@ -162,5 +163,4 @@
   {:option-text "Static text/comment",
    :index 4,
    :predefined true,
-   :template :static}},
- :current-answer-type "Yes / No"}
+   :template :static}}}

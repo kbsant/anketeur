@@ -44,7 +44,9 @@
 (def blank-option
   {:option-text "(New answer type)"
    :custom-template "Single selection"
-   :template :static})
+   :template :radio
+   :param-type :text
+   :params {:values []}})
 
 (def blank-question
   {:question-text ""
