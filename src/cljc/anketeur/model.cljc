@@ -71,17 +71,17 @@
       :option-text "Single selection"
       :template :radio
       :param-type :text
-      :params {:values []}}
+      :params {:values [] :text ""}}
      {:index 1
       :option-text "Multiple selection"
       :template :checkbox
       :param-type :text
-      :params {:values []}}
+      :params {:values [] :text ""}}
      {:index 2
       :option-text "Rating"
       :template :radio
       :param-type :rating
-      :params {:range [5]}}]))
+      :params {:values [] :range [5]}}]))
 
 (defn merge-from-template
   "Set the template of the target. Preserve the params if already set."

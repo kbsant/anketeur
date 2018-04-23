@@ -100,7 +100,7 @@
         [:span "Properties..."]]
       [:div.row
        [:div.col-xs-8
-        [:textarea.mr-1w-75
+        [:textarea.mr-1.w-75
           {:style {:width "75%"}
            :placeholder "Description"
            :value description
@@ -118,28 +118,29 @@
             ^{:key i}
             [:option (when custom-index {:value custom-index}) option-text]))))
 
-(defn update-text-answer-params [pos values text]
-  (as-> values $
-        (assoc $ pos text)
-        (remove clojure.string/blank? $)
-        (into [] $)))
+(defn update-text-answer-params
+  "Split a multi-line string containing custom text values into a vector of string values
+  and update the custom answer type."
+  [params value]
+  (let [text-value (or value "")
+        values (->> (string/split-lines text-value)
+                    (remove string/blank?)
+                    (into []))]
+    (assoc params :values values :text text-value)))
 
-(defn answer-text-input-fn [state custom-index {:keys [values] :as params}]
-  (let [custom-answer-text-input (concat values [""])]
-    [:form
-      (map-indexed
-        (fn [i v]
-          ^{:key i}
-          [:input.mr-1
-            {:type :text
-             :placeholder "Answer text"
-             :value v
-             :on-change
-              (event/update-in-with-js-value
-                state
-                [:answer-types custom-index :params :values]
-                (partial update-text-answer-params i))}])
-        custom-answer-text-input)]))
+(defn answer-text-input-fn [state custom-index {:keys [values text] :as params}]
+  (let [edit-text (or text (string/join "\n" values) "")
+        rows (-> (count values) (or 1) inc)]
+    [:textarea.mr-1.w-75
+      {:style {:width "75%"}
+       :placeholder "(Options)"
+       :rows rows
+       :value edit-text
+       :on-change
+        (event/update-in-with-js-value
+          state
+          [:answer-types custom-index :params]
+          update-text-answer-params)}]))
 
 (defn update-num-answer-params [params value]
   (let [max (when value (js/parseInt value))
