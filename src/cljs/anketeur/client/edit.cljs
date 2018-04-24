@@ -311,13 +311,44 @@
 (defn question-list [state]
   (fn []
     (let [questions (model/question-list-view @state)
+          total (count questions)
+          numbered (count (remove :skip questions))
           render-question (partial toggle-edit-question state)]
       [:div.container
         [:div.row
-          [:span.font-weight-bold (str "Question List (" (count questions) ")")]]
+          [:span.font-weight-bold
+            (when (not= numbered total)
+              (str "Numbered (" numbered ") / "))
+            (str "Total (" total ")")]]
         (when-not (empty? questions)
           (doall
-            (map-indexed render-question questions)))])))
+            (map-indexed render-question questions)))
+        [question-adder state]])))
+
+(defn trash-list [state]
+  (fn []
+    (let [state-info @state
+          {:keys [trash question-map]} state-info
+          {:keys [question-list answer-type-list]} trash
+          questions (map #(get question-map %) question-list)]
+      [:div.container
+        (when (empty? question-list) [:p "No deleted questions."])
+        (map-indexed
+          (fn [i {:keys [index] :as question}]
+            ^{:key i}
+            [:div.row
+              [:div.col-xs-1
+                [:input
+                  {:type :button
+                   :value "←"
+                   :on-click
+                    #(swap! state (fn [s](model/move-question-from-trash s index)))}]]
+              [:div.col-xs-1
+                [:input
+                  {:type :button
+                   :value "x"}]]
+              [:div.col-xs-10 (form/preview-question state-info question)]])
+          questions)])))
 
 (defn home-page []
   [:div.container
@@ -329,8 +360,17 @@
           [:li "auto-save draft"]
           [:li "import/export EDN"]
           [:li "publish questionnaire"]]]]
-    [question-list state]
-    [question-adder state]
+    [:input
+     {:type :button
+      :value "Questions"
+      :on-click #(swap! state assoc-in [:client-state :view] :questions)}]
+    [:input
+     {:type :button
+      :value "Trash"
+      :on-click #(swap! state assoc-in [:client-state :view] :trash)}]
+    (if (= :trash (get-in @state [:client-state :view]))
+      [trash-list state]
+      [question-list state])
     [:ul
       [:li "Questions"
         [:ul
@@ -353,7 +393,6 @@
               [:li "Strongly disagree .. Strongly agree (5 levels)"]
               [:li "Free text"]]]]]]
     [save-button-status state]
-    [:p (str "trash:" (:trash @state))]
     [:p (str "edit question:" (let [i (:edit-index @state)] (get-in @state [:question-map i])))]
     [:p (str "answer types:" (:answer-types @state))]])
 
