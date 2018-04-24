@@ -97,9 +97,11 @@
 (def empty-survey-info
       {:surveyname ""
        :client-state {}
+       :edit-index nil
+       :trash {:question-list [], :answer-type-list []}
+       :clipboard {:edit-index nil, :action nil}
        :question-list []
-       :question-map
-        {:new-question new-question}
+       :question-map {:new-question new-question}
        :answer-types
         (map-with-key
           :option-text
@@ -150,6 +152,18 @@
       (assoc-in [:question-map question-id] question-info)
       (update :question-list conj question-id)
       (assoc :edit-index question-id))))
+
+(defn move-question-to-trash [state-info index]
+  (-> state-info
+      (assoc :edit-index nil)
+      (update-in [:trash :question-list] conj index)
+      (update :question-list #(->> % (remove #{index}) (into [])))))
+
+(defn move-question-from-trash [state-info index]
+  (-> state-info
+      (assoc :edit-index index)
+      (update-in [:trash :question-list] #(->> % (remove #{index}) (into [])))
+      (update :question-list conj index)))
 
 ;; TODO could refactor this - common logic with add-question
 (defn add-answer-type

@@ -232,16 +232,22 @@
         [:input.mr-1.mb-1
          {:type :button
           :value "↓"
-          :on-click #(swap! state update :question-list vswap ord (inc ord))}]]
+          :on-click #(swap! state update :question-list vswap ord (inc ord))}]
+        [:input.mr-1.mb-1
+         {:type :button
+          :value "×"
+          :on-click #(swap! state (fn [s](model/move-question-to-trash s index)))}]]
       [:div.row
         [:span.mr-1.font-weight-bold (str pos)]
-        [:input.mr-1
-          {:type :text
+        [:input.mr-1.w-60
+          {:style {:width "70%"}
+           :type :text
            :value question-text
            :placeholder "Question"
            :on-change (event/assoc-in-with-js-value
                         state
-                        [:question-map index :question-text])}]
+                        [:question-map index :question-text])}]]
+      [:div.row
         [:label.mr-1
           [:input.mr-1
             {:type :checkbox
@@ -347,6 +353,7 @@
               [:li "Strongly disagree .. Strongly agree (5 levels)"]
               [:li "Free text"]]]]]]
     [save-button-status state]
+    [:p (str "trash:" (:trash @state))]
     [:p (str "edit question:" (let [i (:edit-index @state)] (get-in @state [:question-map i])))]
     [:p (str "answer types:" (:answer-types @state))]])
 
