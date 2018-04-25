@@ -20,6 +20,9 @@
 (defn doc-from-state [state-info]
   (dissoc state-info :client-state))
 
+(defn doc-to-state [{:keys [client-state] :as state-info} doc]
+  (assoc doc :client-state client-state))
+
 (defn vswap
   "Swap items in a vector if indexes are in bounds."
   [v i1 i2]
@@ -27,6 +30,35 @@
     (let [e1 (v i1), e2 (v i2)]
       (assoc v i1 e2 i2 e1))
     v))
+
+(defn save-undo-point [state-info]
+  (let [doc (doc-from-state state-info)]
+    (-> state-info
+        (update-in [:client-state :undo] conj doc)
+        (assoc-in [:client-state :redo] nil))))
+
+(defn apply-undo [state-info]
+  (let [doc (doc-from-state state-info)
+        prev (peek (get-in state-info [:client-state :undo]))]
+    (if-not prev
+      ;; nothing in undo stack. can't undo.
+      state-info
+      (-> state-info
+          (update-in [:client-state :redo] conj [prev doc])
+          (update-in [:client-state :undo] pop)
+          (doc-to-state prev)))))
+
+;; TODO don't redo if state has changed
+(defn apply-redo [state-info]
+  (let [doc (doc-from-state state-info)
+        [prev next] (peek (get-in state-info [:client-state :redo]))]
+    (if-not (= doc prev)
+      ;; doc has changed. can't redo.
+      state-info
+      (-> state-info
+          (update-in [:client-state :undo] conj doc)
+          (update-in [:client-state :redo] pop)
+          (doc-to-state next)))))
 
 (defn fade-save-status [state]
    (ui/single-timer
@@ -220,8 +252,8 @@
 
 (defn edit-question
   [state ord question]
-  (let [{:keys [pos question-text answer-type required allow-na skip index]}
-        (merge model/blank-question question)]
+  (let [merged (merge model/blank-question question)
+        {:keys [pos question-text answer-type required allow-na skip index]} merged]
     ^{:key index}
     [:div.container
       [:div.row
@@ -293,16 +325,21 @@
                :value "Add a new question"
                :on-click #(swap! state model/add-question model/new-question)}]]))
 
+(defn update-edit-index [index state-info]
+  (update state-info :edit-index #(if (= % index) -1 index)))
+
 (defn toggle-edit-question [state ord {:keys [index] :as question}]
-  (let [active (= index (:edit-index @state))]
+  (let [active (= index (:edit-index @state))
+        update-fn (comp
+                    (partial update-edit-index index)
+                    save-undo-point)]
     ^{:key index}
     [:div.row
       [:div.col-xs-1
         [:input
           {:type :button
            :value (if active "»" " ")
-           :on-click (fn []
-                       (swap! state update :edit-index #(if (= % index) -1 index)))}]]
+           :on-click #(swap! state update-fn)}]]
       [:div.col-xs-11
         (if active
           (edit-question state ord question)
@@ -364,6 +401,14 @@
      {:type :button
       :value "Questions"
       :on-click #(swap! state assoc-in [:client-state :view] :questions)}]
+    [:input
+     {:type :button
+      :value "Undo"
+      :on-click #(swap! state apply-undo)}]
+    [:input
+     {:type :button
+      :value "Redo"
+      :on-click #(swap! state apply-redo)}]
     [:input
      {:type :button
       :value "Trash"
