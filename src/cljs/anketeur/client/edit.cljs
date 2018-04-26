@@ -31,10 +31,13 @@
       (assoc v i1 e2 i2 e1))
     v))
 
-(defn save-undo-point [state-info]
-  (let [doc (doc-from-state state-info)]
-    (-> state-info
-        (update-in [:client-state :undo] conj doc)
+(defn save-undo-point [event-type state-info]
+  (let [doc (doc-from-state state-info)
+        prev (peek (get-in state-info [:client-state :undo]))]
+    (cond-> state-info
+        (or (not= :text event-type) (not= :text (:event-type prev)))
+        (update-in [:client-state :undo] conj (assoc doc :event-type event-type))
+        true
         (assoc-in [:client-state :redo] nil))))
 
 (defn apply-undo [state-info]
@@ -236,24 +239,20 @@
       [:div.row
         (answer-param-customizer state current-answer)]]))
 
-(defn add-answer-type!
-  "Add a blank answer type and return the index."
-  [state]
-  (let [new-state (swap! state model/add-answer-type model/blank-option)
-        question-index (:edit-index new-state)]
-    (get-in new-state [:question-map question-index :answer-type])))
-
-(defn select-answer-type [question-index ev]
-  (let [value (event/target-value ev)
-        answer-index (if-not (= "custom-answer-type" value)
-                        value
-                        (add-answer-type! state))]
-      (swap! state assoc-in [:question-map question-index :answer-type] answer-index)))
+(defn select-answer-type! [question-index ev]
+  (let [answer-index (event/target-value ev)
+        update-fn (if-not (= "custom-answer-type" answer-index)
+                   (partial model/select-answer-type question-index answer-index)
+                   model/add-answer-type)]
+      (swap! state update-fn)))
 
 (defn edit-question
   [state ord question]
   (let [merged (merge model/blank-question question)
-        {:keys [pos question-text answer-type required allow-na skip index]} merged]
+        {:keys [pos question-text answer-type required allow-na skip index]} merged
+        to-trash-fn (comp
+                      (partial model/move-question-to-trash index)
+                      (partial save-undo-point :trash))]
     ^{:key index}
     [:div.container
       [:div.row
@@ -268,7 +267,7 @@
         [:input.mr-1.mb-1
          {:type :button
           :value "×"
-          :on-click #(swap! state (fn [s](model/move-question-to-trash s index)))}]]
+          :on-click #(swap! state to-trash-fn)}]]
       [:div.row
         [:span.mr-1.font-weight-bold (str pos)]
         [:input.mr-1.w-60
@@ -312,7 +311,7 @@
           "Skip numbering (child item)"]
         [:select.mr-1
           {:value answer-type
-           :on-change (partial select-answer-type index)}
+           :on-change (partial select-answer-type! index)}
           (render-select-options (:answer-types @state))]]
       [:div.row
         [answer-customizer state]]]))
@@ -332,7 +331,7 @@
   (let [active (= index (:edit-index @state))
         update-fn (comp
                     (partial update-edit-index index)
-                    save-undo-point)]
+                    (partial save-undo-point :ui))]
     ^{:key index}
     [:div.row
       [:div.col-xs-1
@@ -379,13 +378,20 @@
                   {:type :button
                    :value "←"
                    :on-click
-                    #(swap! state (fn [s](model/move-question-from-trash s index)))}]]
+                    #(swap!
+                       state
+                       (comp
+                         (partial model/move-question-from-trash index)
+                         (partial save-undo-point :trash)))}]]
               [:div.col-xs-1
                 [:input
                   {:type :button
                    :value "x"}]]
               [:div.col-xs-10 (form/preview-question state-info question)]])
           questions)])))
+
+(defn toggle-view-trash [state-info]
+  (update-in state-info [:client-state :view] #(if (= :trash %) :questions :trash)))
 
 (defn home-page []
   [:div.container
@@ -399,10 +405,6 @@
           [:li "publish questionnaire"]]]]
     [:input
      {:type :button
-      :value "Questions"
-      :on-click #(swap! state assoc-in [:client-state :view] :questions)}]
-    [:input
-     {:type :button
       :value "Undo"
       :on-click #(swap! state apply-undo)}]
     [:input
@@ -411,8 +413,8 @@
       :on-click #(swap! state apply-redo)}]
     [:input
      {:type :button
-      :value "Trash"
-      :on-click #(swap! state assoc-in [:client-state :view] :trash)}]
+      :value "View Trash"
+      :on-click #(swap! state toggle-view-trash)}]
     (if (= :trash (get-in @state [:client-state :view]))
       [trash-list state]
       [question-list state])
@@ -437,9 +439,7 @@
               [:li "Yes / No"]
               [:li "Strongly disagree .. Strongly agree (5 levels)"]
               [:li "Free text"]]]]]]
-    [save-button-status state]
-    [:p (str "edit question:" (let [i (:edit-index @state)] (get-in @state [:question-map i])))]
-    [:p (str "answer types:" (:answer-types @state))]])
+    [save-button-status state]])
 
 ; -------------------------
 ;; Initialize app

@@ -153,29 +153,34 @@
       (update :question-list conj question-id)
       (assoc :edit-index question-id))))
 
-(defn move-question-to-trash [state-info index]
+(defn move-question-to-trash [index state-info]
   (-> state-info
       (assoc :edit-index nil)
       (update-in [:trash :question-list] conj index)
       (update :question-list #(->> % (remove #{index}) (into [])))))
 
-(defn move-question-from-trash [state-info index]
+(defn move-question-from-trash [index state-info]
   (-> state-info
       (assoc :edit-index index)
       (update-in [:trash :question-list] #(->> % (remove #{index}) (into [])))
       (update :question-list conj index)))
 
+(defn select-answer-type [question-index answer-index state-info]
+  (assoc-in state-info [:question-map question-index :answer-type] answer-index))
+
 ;; TODO could refactor this - common logic with add-question
 (defn add-answer-type
   "Add a question to both the question index and list.
   To update the state, use this function with swap! ."
-  [state-info item]
-  (let [answer-id (str (next-item-id (:answer-types state-info)))
-        edit-question-id (:edit-index state-info)
-        answer-info (assoc item :custom-index answer-id)]
-    (-> state-info
-      (assoc-in [:answer-types answer-id] answer-info)
-      (assoc-in [:question-map edit-question-id :answer-type] answer-id))))
+  ([state-info]
+   (add-answer-type state-info blank-option))
+  ([state-info item]
+   (let [answer-id (str (next-item-id (:answer-types state-info)))
+         edit-question-id (:edit-index state-info)
+         answer-info (assoc item :custom-index answer-id)]
+     (as-> state-info $
+         (assoc-in $ [:answer-types answer-id] answer-info)
+         (select-answer-type edit-question-id answer-id $)))))
 
 (defn add-coll-answers [answers {:keys [index] :as question-info}]
   (let [coll-answers (map #(get % (str index)) answers)]
