@@ -126,7 +126,7 @@
           {:type :text
            :value surveyname
            :placeholder "Survey name"
-           :on-change #(swap! state (ui/js-assoc-fn :surveyname %))}]
+           :on-change #(swap! state (undoable :text (ui/js-assoc-fn :surveyname %)))}]
         [:input.mr-1
           {:type :button
            :value "Save"
@@ -150,7 +150,7 @@
           {:style {:width "75%"}
            :placeholder "Description"
            :value description
-           :on-change #(swap! state (ui/js-assoc-fn :description %))}]]]]))
+           :on-change #(swap! state (undoable :text (ui/js-assoc-fn :description %)))}]]]]))
 
 (defn render-select-options
   "Given a map of answer types, render a list of options
@@ -183,10 +183,10 @@
        :rows rows
        :value edit-text
        :on-change
-        #(swap!
-          state
-          (ui/js-update-in-fn
-            [:answer-types custom-index :params] update-text-answer-params %))}]))
+        #(swap! state
+          (undoable :text
+            (ui/js-update-in-fn
+              [:answer-types custom-index :params] update-text-answer-params %)))}]))
 
 (defn update-num-answer-params [params value]
   (let [max (when value (js/parseInt value))
@@ -206,10 +206,10 @@
        :placeholder "Max rating"
        :value value
        :on-change
-          #(swap!
-            state
-            (ui/js-update-in-fn
-              [:answer-types custom-index :params] update-num-answer-params %))}]))
+          #(swap! state
+            (undoable :text
+              (ui/js-update-in-fn
+                [:answer-types custom-index :params] update-num-answer-params %)))}]))
 
 (def answer-param-input-renderers
   {:text answer-text-input-fn
@@ -235,16 +235,18 @@
            :disabled predefined?
            :placeholder "Name of the answer type"
            :value (:option-text current-answer)
-           :on-change #(swap!
-                        state
-                        (ui/js-assoc-in-fn [:answer-types answer-index :option-text] %))}]
+           :on-change
+             #(swap! state
+                (undoable :text
+                  (ui/js-assoc-in-fn [:answer-types answer-index :option-text] %)))}]
         [:select
           (merge
             {:disabled predefined?
-             :on-change #(swap!
-                          state
-                          (ui/js-update-in-fn
-                            [:answer-types answer-index] model/merge-from-template %))}
+             :on-change
+               #(swap! state
+                  (undoable :select
+                    (ui/js-update-in-fn
+                      [:answer-types answer-index] model/merge-from-template %)))}
             (when custom-template {:value custom-template}))
           (render-select-options model/answer-template-options)]]
       [:div.row
@@ -285,44 +287,40 @@
            :type :text
            :value question-text
            :placeholder "Question"
-           :on-change #(swap!
-                        state
-                        (ui/js-assoc-in-fn [:question-map index :question-text] %))}]]
+           :on-change #(swap! state
+                         (undoable :text
+                          (ui/js-assoc-in-fn [:question-map index :question-text] %)))}]]
       [:div.row
         [:label.mr-1
           [:input.mr-1
             {:type :checkbox
              :checked required
              :value required
-             :on-change #(swap!
-                          state
-                          (undoable
-                            :check update-in [:question-map index :required] not))}]
+             :on-change
+               #(swap! state
+                  (undoable :check update-in [:question-map index :required] not))}]
           "Require an answer"]
         [:label.mr-1
           [:input.mr-1
             {:type :checkbox
              :checked allow-na
              :value allow-na
-             :on-change #(swap!
-                          state
-                          (undoable
-                            :check update-in [:question-map index :allow-na] not))}]
+             :on-change
+               #(swap! state
+                  (undoable :check update-in [:question-map index :allow-na] not))}]
           "Provide Not Applicable"]
         [:label.mr-1
           [:input.mr-1
             {:type :checkbox
              :checked skip
              :value skip
-             :on-change #(swap!
-                          state
-                          (undoable :check update-in [:question-map index :skip] not))}]
+             :on-change
+               #(swap! state (undoable :check update-in [:question-map index :skip] not))}]
           "Skip numbering (child item)"]
         [:select.mr-1
           {:value answer-type
-           :on-change #(swap!
-                        state
-                        (undoable :answer (partial add-or-select-answer-type index %)))}
+           :on-change
+             #(swap! state (undoable :select (partial add-or-select-answer-type index %)))}
           (render-select-options (:answer-types @state))]]
       [:div.row
         [answer-customizer state]]]))
@@ -333,9 +331,8 @@
       [:br]
       [:input {:type :button
                :value "Add a new question"
-               :on-click #(swap!
-                            state
-                            (undoable :answer model/add-question model/new-question))}]]))
+               :on-click #(swap! state
+                            (undoable :select model/add-question model/new-question))}]]))
 
 (defn update-edit-index [index state-info]
   (update state-info :edit-index #(if (= % index) -1 index)))
@@ -389,8 +386,7 @@
                   {:type :button
                    :value "←"
                    :on-click
-                    #(swap!
-                       state
+                    #(swap! state
                        (undoable :trash (partial model/move-question-from-trash index)))}]]
               [:div.col-xs-1
                 [:input
