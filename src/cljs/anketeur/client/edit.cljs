@@ -158,7 +158,7 @@
   [answer-types]
   (->> answer-types
        vals
-       (sort (comp < :index))
+       (sort-by :option-text)
        (map-indexed
           (fn [i {:keys [custom-index option-text]}]
             ^{:key i}
@@ -423,11 +423,6 @@
           [:li "Allow cut / copy / paste / delete"]
           [:li "Select and purge trash"]
           [:li "Validate/sanitize free text fields, numbers, dates"]]]]
-    [:ul
-      [:li "Add/edit types of answers"
-        [:ul
-          [:li "Customize named scale 1 (Least something*) to n (Most something*)"]
-          [:li "Sorting/Ranking of drop-down items -- drag and drop? move up/down?"]]]]
     [save-button-status state]])
 
 ; -------------------------
