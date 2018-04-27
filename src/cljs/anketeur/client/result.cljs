@@ -1,7 +1,6 @@
 (ns anketeur.client.result
   (:require
     [clojure.string :as string]
-    [anketeur.client.event :as event]
     [anketeur.form :as form]
     [anketeur.client.ui :as ui]
     [reagent.core :as r]

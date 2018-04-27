@@ -15,6 +15,33 @@
 (defn write-json [value]
   (t/write json-writer value))
 
+(defn target-value [ev]
+  (-> ev .-target .-value))
+
+(defn js-assoc [key ev data]
+  (assoc data key (target-value ev)))
+
+(defn js-assoc-in [keys ev data]
+  (assoc-in data keys (target-value ev)))
+
+(defn js-update [key f ev data]
+  (update data key f (target-value ev)))
+
+(defn js-update-in [keys f ev data]
+  (update-in data keys f (target-value ev)))
+
+(defn js-assoc-fn [key ev]
+  (partial js-assoc key ev))
+
+(defn js-assoc-in-fn [key ev]
+  (partial js-assoc-in key ev))
+
+(defn js-update-fn [keys f ev]
+  (partial js-update keys f ev))
+
+(defn js-update-in-fn [keys f ev]
+  (partial js-update-in keys f ev))
+
 (defn element-by-id [id]
   (.getElementById js/document id))
 

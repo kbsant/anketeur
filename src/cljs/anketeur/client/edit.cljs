@@ -1,7 +1,6 @@
 (ns anketeur.client.edit
   (:require
     [clojure.string :as string]
-    [anketeur.client.event :as event] 
     [reagent.core :as r]
     [anketeur.model :as model]
     [anketeur.form :as form]
@@ -39,6 +38,18 @@
         (update-in [:client-state :undo] conj (assoc doc :event-type event-type))
         true
         (assoc-in [:client-state :redo] nil))))
+
+(defn undoable
+  "Create an undoable function. The first parameter is the event type.
+  The following parameters are the function, followed by arguments.
+  The function is applied in the same way as swap! :
+  The value of the atom is passed as the first argument, followed by
+  the specified arguments."
+  ([event-type f x] (undoable event-type #(f % x)))
+  ([event-type f x y] (undoable event-type #(f % x y)))
+  ([event-type f x y & args] (undoable event-type #(apply f % x y args)))
+  ([event-type f]
+   (comp f (partial save-undo-point event-type))))
 
 (defn apply-undo [state-info]
   (let [doc (doc-from-state state-info)
@@ -115,7 +126,7 @@
           {:type :text
            :value surveyname
            :placeholder "Survey name"
-           :on-change (event/assoc-with-js-value state :surveyname)}]
+           :on-change #(swap! state (ui/js-assoc-fn :surveyname %))}]
         [:input.mr-1
           {:type :button
            :value "Save"
@@ -139,7 +150,7 @@
           {:style {:width "75%"}
            :placeholder "Description"
            :value description
-           :on-change (event/assoc-with-js-value state :description)}]]]]))
+           :on-change #(swap! state (ui/js-assoc-fn :description %))}]]]]))
 
 (defn render-select-options
   "Given a map of answer types, render a list of options
@@ -172,10 +183,10 @@
        :rows rows
        :value edit-text
        :on-change
-        (event/update-in-with-js-value
+        #(swap!
           state
-          [:answer-types custom-index :params]
-          update-text-answer-params)}]))
+          (ui/js-update-in-fn
+            [:answer-types custom-index :params] update-text-answer-params %))}]))
 
 (defn update-num-answer-params [params value]
   (let [max (when value (js/parseInt value))
@@ -195,10 +206,10 @@
        :placeholder "Max rating"
        :value value
        :on-change
-          (event/update-in-with-js-value
+          #(swap!
             state
-            [:answer-types custom-index :params]
-            update-num-answer-params)}]))
+            (ui/js-update-in-fn
+              [:answer-types custom-index :params] update-num-answer-params %))}]))
 
 (def answer-param-input-renderers
   {:text answer-text-input-fn
@@ -224,50 +235,49 @@
            :disabled predefined?
            :placeholder "Name of the answer type"
            :value (:option-text current-answer)
-           :on-change (event/assoc-in-with-js-value
+           :on-change #(swap!
                         state
-                        [:answer-types answer-index :option-text])}]
+                        (ui/js-assoc-in-fn [:answer-types answer-index :option-text] %))}]
         [:select
           (merge
             {:disabled predefined?
-             :on-change (event/update-in-with-js-value
+             :on-change #(swap!
                           state
-                          [:answer-types answer-index]
-                          model/merge-from-template)}
+                          (ui/js-update-in-fn
+                            [:answer-types answer-index] model/merge-from-template %))}
             (when custom-template {:value custom-template}))
           (render-select-options model/answer-template-options)]]
       [:div.row
         (answer-param-customizer state current-answer)]]))
 
-(defn select-answer-type! [question-index ev]
-  (let [answer-index (event/target-value ev)
-        update-fn (if-not (= "custom-answer-type" answer-index)
-                   (partial model/select-answer-type question-index answer-index)
-                   model/add-answer-type)]
-      (swap! state update-fn)))
+(defn add-or-select-answer-type [question-index ev state-info]
+  (let [answer-index (ui/target-value ev)]
+     (if (= "custom-answer-type" answer-index)
+       (model/add-answer-type state-info)
+       (model/select-answer-type question-index answer-index state-info))))
 
 (defn edit-question
   [state ord question]
   (let [merged (merge model/blank-question question)
         {:keys [pos question-text answer-type required allow-na skip index]} merged
-        to-trash-fn (comp
-                      (partial model/move-question-to-trash index)
-                      (partial save-undo-point :trash))]
-    ^{:key index}
+        move-up-fn #(update % :question-list vswap (dec ord) ord)
+        move-down-fn #(update % :question-list vswap ord (inc ord))
+        to-trash-fn (partial model/move-question-to-trash index)]
+   ^{:key index}
     [:div.container
       [:div.row
         [:input.mr-1.mb-1
          {:type :button
           :value "↑"
-          :on-click #(swap! state update :question-list vswap (dec ord) ord)}]
+          :on-click #(swap! state (undoable :move move-up-fn))}]
         [:input.mr-1.mb-1
          {:type :button
           :value "↓"
-          :on-click #(swap! state update :question-list vswap ord (inc ord))}]
+          :on-click #(swap! state (undoable :move move-down-fn))}]
         [:input.mr-1.mb-1
          {:type :button
           :value "×"
-          :on-click #(swap! state to-trash-fn)}]]
+          :on-click #(swap! state (undoable :trash to-trash-fn))}]]
       [:div.row
         [:span.mr-1.font-weight-bold (str pos)]
         [:input.mr-1.w-60
@@ -275,9 +285,9 @@
            :type :text
            :value question-text
            :placeholder "Question"
-           :on-change (event/assoc-in-with-js-value
+           :on-change #(swap!
                         state
-                        [:question-map index :question-text])}]]
+                        (ui/js-assoc-in-fn [:question-map index :question-text] %))}]]
       [:div.row
         [:label.mr-1
           [:input.mr-1
@@ -285,9 +295,9 @@
              :checked required
              :value required
              :on-change #(swap!
-                          state update-in
-                          [:question-map index :required]
-                          not)}]
+                          state
+                          (undoable
+                            :check update-in [:question-map index :required] not))}]
           "Require an answer"]
         [:label.mr-1
           [:input.mr-1
@@ -295,9 +305,9 @@
              :checked allow-na
              :value allow-na
              :on-change #(swap!
-                          state update-in
-                          [:question-map index :allow-na]
-                          not)}]
+                          state
+                          (undoable
+                            :check update-in [:question-map index :allow-na] not))}]
           "Provide Not Applicable"]
         [:label.mr-1
           [:input.mr-1
@@ -305,13 +315,14 @@
              :checked skip
              :value skip
              :on-change #(swap!
-                          state update-in
-                          [:question-map index :skip]
-                          not)}]
+                          state
+                          (undoable :check update-in [:question-map index :skip] not))}]
           "Skip numbering (child item)"]
         [:select.mr-1
           {:value answer-type
-           :on-change (partial select-answer-type! index)}
+           :on-change #(swap!
+                        state
+                        (undoable :answer (partial add-or-select-answer-type index %)))}
           (render-select-options (:answer-types @state))]]
       [:div.row
         [answer-customizer state]]]))
@@ -322,23 +333,23 @@
       [:br]
       [:input {:type :button
                :value "Add a new question"
-               :on-click #(swap! state model/add-question model/new-question)}]]))
+               :on-click #(swap!
+                            state
+                            (undoable :answer model/add-question model/new-question))}]]))
 
 (defn update-edit-index [index state-info]
   (update state-info :edit-index #(if (= % index) -1 index)))
 
 (defn toggle-edit-question [state ord {:keys [index] :as question}]
   (let [active (= index (:edit-index @state))
-        update-fn (comp
-                    (partial update-edit-index index)
-                    (partial save-undo-point :ui))]
+        toggle-fn (partial update-edit-index index)]
     ^{:key index}
     [:div.row
       [:div.col-xs-1
         [:input
           {:type :button
            :value (if active "»" " ")
-           :on-click #(swap! state update-fn)}]]
+           :on-click #(swap! state (undoable :ui toggle-fn))}]]
       [:div.col-xs-11
         (if active
           (edit-question state ord question)
@@ -380,9 +391,7 @@
                    :on-click
                     #(swap!
                        state
-                       (comp
-                         (partial model/move-question-from-trash index)
-                         (partial save-undo-point :trash)))}]]
+                       (undoable :trash (partial model/move-question-from-trash index)))}]]
               [:div.col-xs-1
                 [:input
                   {:type :button
@@ -411,34 +420,25 @@
      {:type :button
       :value "Redo"
       :on-click #(swap! state apply-redo)}]
+    [question-list state]
     [:input
      {:type :button
       :value "View Trash"
       :on-click #(swap! state toggle-view-trash)}]
-    (if (= :trash (get-in @state [:client-state :view]))
-      [trash-list state]
-      [question-list state])
+    (when (= :trash (get-in @state [:client-state :view]))
+      [trash-list state])
     [:ul
       [:li "Questions"
+        [:p (str @state)]
         [:ul
-          [:li "Undo / redo"]
-          [:li "Allow cut / copy / paste / delete"]]]]
-    [:ul
-      [:li "Add a question"
-        [:ul
-          [:li "Add/edit an answer type"]
+          [:li "Allow cut / copy / paste / delete"]
+          [:li "Select and purge trash"]
           [:li "Validate/sanitize free text fields, numbers, dates"]]]]
     [:ul
       [:li "Add/edit types of answers"
         [:ul
           [:li "Customize named scale 1 (Least something*) to n (Most something*)"]
-          [:li "Sorting/Ranking of drop-down items -- drag and drop? move up/down?"]
-          [:li "Add drop-down to select an answer type to edit"]
-          [:li "Don't edit predefined answer types"
-            [:ul
-              [:li "Yes / No"]
-              [:li "Strongly disagree .. Strongly agree (5 levels)"]
-              [:li "Free text"]]]]]]
+          [:li "Sorting/Ranking of drop-down items -- drag and drop? move up/down?"]]]]
     [save-button-status state]])
 
 ; -------------------------
