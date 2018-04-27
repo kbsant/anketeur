@@ -58,7 +58,6 @@
       [:div.container
         [:h1 (:surveyname state-info)]
         [:p (:description state-info)]
-        [:p (-> state-info :answers str)]
         [:ul]
         [:div.row
           [:span.font-weight-bold (str "Question List (" (count questions) ")")]]

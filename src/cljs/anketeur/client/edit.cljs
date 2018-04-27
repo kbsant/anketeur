@@ -402,12 +402,6 @@
   [:div.container
     [:h1 "Survey Editor"]
     [save-control-group state]
-    [:ul
-      [:li "Edit a survey"
-        [:ul
-          [:li "auto-save draft"]
-          [:li "import/export EDN"]
-          [:li "publish questionnaire"]]]]
     [:input
      {:type :button
       :value "Undo"
@@ -425,7 +419,6 @@
       [trash-list state])
     [:ul
       [:li "Questions"
-        [:p (str @state)]
         [:ul
           [:li "Allow cut / copy / paste / delete"]
           [:li "Select and purge trash"]
