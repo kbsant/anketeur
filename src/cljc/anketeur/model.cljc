@@ -165,6 +165,12 @@
       (update-in [:trash :question-list] #(->> % (remove #{index}) (into [])))
       (update :question-list conj index)))
 
+(defn purge-question-from-trash [index state-info]
+  (-> state-info
+      (update :question map :dissoc index)
+      (update-in [:trash :question-list] #(->> % (remove #{index}) (into [])))))
+
+
 (defn select-answer-type [question-index answer-index state-info]
   (assoc-in state-info [:question-map question-index :answer-type] answer-index))
 

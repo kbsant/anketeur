@@ -391,12 +391,21 @@
               [:div.col-xs-1
                 [:input
                   {:type :button
-                   :value "x"}]]
+                   :value "x"
+                   :on-click
+                    #(swap! state
+                      (undoable :trash (partial model/purge-question-from-trash index)))}]]
               [:div.col-xs-10 (form/preview-question state-info question)]])
           questions)])))
 
-(defn toggle-view-trash [state-info]
-  (update-in state-info [:client-state :view] #(if (= :trash %) :questions :trash)))
+(defn toggle-trash-button [state]
+  (let [trash-visible? (= :trash (get-in @state [:client-state :view]))
+        next-state (if trash-visible? :questions :trash)
+        toggle-fn #(assoc-in % [:client-state :view] next-state)]
+    [:input
+     {:type :button
+      :value (if trash-visible? "Hide Trash" "View Trash")
+      :on-click #(swap! state toggle-fn)}]))
 
 (defn home-page []
   [:div.container
@@ -410,20 +419,19 @@
      {:type :button
       :value "Redo"
       :on-click #(swap! state apply-redo)}]
-    [question-list state]
-    [:input
-     {:type :button
-      :value "View Trash"
-      :on-click #(swap! state toggle-view-trash)}]
+    [toggle-trash-button state]
     (when (= :trash (get-in @state [:client-state :view]))
       [trash-list state])
+    [question-list state]
     [:ul
-      [:li "Questions"
+      [:li "Questions TO-DO"
         [:ul
-          [:li "Allow cut / copy / paste / delete"]
-          [:li "Select and purge trash"]
+          [:li "Allow cut / copy / paste"]
+          [:li "Purge unused custom answer types"]
           [:li "Validate/sanitize free text fields, numbers, dates"]]]]
-    [save-button-status state]])
+    [:br]
+    [save-button-status state]
+    [:br]])
 
 ; -------------------------
 ;; Initialize app
