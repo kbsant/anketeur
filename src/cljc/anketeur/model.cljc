@@ -99,7 +99,7 @@
        :client-state {}
        :edit-index nil
        :trash {:question-list [], :answer-type-list []}
-       :clipboard {:edit-index nil, :action nil}
+       :clipboard {:question-list []}
        :question-list []
        :question-map {:new-question new-question}
        :answer-types
@@ -163,7 +163,7 @@
   (-> state-info
       (assoc :edit-index index)
       (update-in [:trash :question-list] #(->> % (remove #{index}) (into [])))
-      (update :question-list conj index)))
+      (update :question-list #(into [index] %))))
 
 (defn purge-question-from-trash [index state-info]
   (-> state-info

@@ -62,7 +62,6 @@
           (update-in [:client-state :undo] pop)
           (doc-to-state prev)))))
 
-;; TODO don't redo if state has changed
 (defn apply-redo [state-info]
   (let [doc (doc-from-state state-info)
         [prev next] (peek (get-in state-info [:client-state :redo]))]
@@ -73,6 +72,14 @@
           (update-in [:client-state :undo] conj doc)
           (update-in [:client-state :redo] pop)
           (doc-to-state next)))))
+
+(defn cut-question [{:keys [edit-index] :as state-info}]
+  (-> state-info
+      (update :question-list #(->> % (remove #{edit-index}) (into [])))
+      (update-in [:clipboard :question-list] conj edit-index)))
+
+(defn paste-question [{:keys [edit-index] :as state-info}])
+  ;; TODO insert at edit-index ... into [] subvec [0 edit-index) x [edit-index rest]
 
 (defn fade-save-status [state]
    (ui/single-timer
@@ -419,6 +426,10 @@
      {:type :button
       :value "Redo"
       :on-click #(swap! state apply-redo)}]
+    [:input
+     {:type :button
+      :value "Cut"
+      :on-click #(swap! state (undoable :cut cut-question))}]
     [toggle-trash-button state]
     (when (= :trash (get-in @state [:client-state :view]))
       [trash-list state])
