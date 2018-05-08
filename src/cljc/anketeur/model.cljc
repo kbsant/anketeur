@@ -58,6 +58,24 @@
 (def new-question
   (assoc blank-question :index :new-question))
 
+(defn insert-vec
+  "Insert a value into a vector at a position"
+  [val pos vec]
+  (let [part (if (vector? val) val [val])]
+    (cond
+      (empty? vec)
+      part
+      (or (empty? val) (empty? part))
+      vec
+      (= 0 pos)
+      (into part vec)
+      (>= pos (count vec))
+      (into vec part)
+      :else
+      (let [start (subvec vec 0 pos)
+            end (subvec vec pos)]
+        (-> start (into val) (into end))))))
+
 (defn map-with-key
   "Transform a sequence ({:k k1 ...}, {:k k2 ...}...)
   into a map {k1 {:k k1 ...} k2 {:k k2, ...}}"

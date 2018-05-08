@@ -78,8 +78,11 @@
       (update :question-list #(->> % (remove #{edit-index}) (into [])))
       (update-in [:clipboard :question-list] conj edit-index)))
 
-(defn paste-question [{:keys [edit-index] :as state-info}])
-  ;; TODO insert at edit-index ... into [] subvec [0 edit-index) x [edit-index rest]
+(defn paste-question [ord {:keys [edit-index clipboard] :as state-info}]
+  (let [cut-data (:question-list clipboard)]
+    (-> state-info
+        (assoc-in [:clipboard :question-list] [])
+        (update :question-list (partial model/insert-vec cut-data ord)))))
 
 (defn fade-save-status [state]
    (ui/single-timer
@@ -271,7 +274,9 @@
         {:keys [pos question-text answer-type required allow-na skip index]} merged
         move-up-fn #(update % :question-list vswap (dec ord) ord)
         move-down-fn #(update % :question-list vswap ord (inc ord))
-        to-trash-fn (partial model/move-question-to-trash index)]
+        paste-fn (partial paste-question ord)
+        to-trash-fn (partial model/move-question-to-trash index)
+        clipboard-empty? (empty? (get-in @state [:clipboard :question-list]))]
    ^{:key index}
     [:div.container
       [:div.row
@@ -283,6 +288,15 @@
          {:type :button
           :value "↓"
           :on-click #(swap! state (undoable :move move-down-fn))}]
+        [:input.mr-1.mb-1
+         {:type :button
+          :value "Cut"
+          :on-click #(swap! state (undoable :cut cut-question))}]
+        [:input.mr-1.mb-1
+         {:type :button
+          :value "Paste"
+          :disabled clipboard-empty?
+          :on-click #(swap! state (undoable :cut paste-fn))}]
         [:input.mr-1.mb-1
          {:type :button
           :value "×"
@@ -426,10 +440,6 @@
      {:type :button
       :value "Redo"
       :on-click #(swap! state apply-redo)}]
-    [:input
-     {:type :button
-      :value "Cut"
-      :on-click #(swap! state (undoable :cut cut-question))}]
     [toggle-trash-button state]
     (when (= :trash (get-in @state [:client-state :view]))
       [trash-list state])
@@ -438,8 +448,7 @@
       [:li "Questions TO-DO"
         [:ul
           [:li "Allow cut / copy / paste"]
-          [:li "Purge unused custom answer types"]
-          [:li "Validate/sanitize free text fields, numbers, dates"]]]]
+          [:li "Purge unused custom answer types"]]]]
     [:br]
     [save-button-status state]
     [:br]])
