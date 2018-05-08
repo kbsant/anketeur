@@ -73,10 +73,24 @@
           (update-in [:client-state :redo] pop)
           (doc-to-state next)))))
 
+(defn clipboard-to-trash [state-info]
+  (let [clipboard (get-in state-info [:clipboard :question-list])]
+    (if (empty? clipboard)
+      state-info
+      (-> state-info
+          (assoc-in [:clipboard :question-list] [])
+          (update-in [:trash :question-list] into clipboard)))))
+
 (defn cut-question [{:keys [edit-index] :as state-info}]
   (-> state-info
       (update :question-list #(->> % (remove #{edit-index}) (into [])))
-      (update-in [:clipboard :question-list] conj edit-index)))
+      clipboard-to-trash
+      (assoc-in [:clipboard :question-list] [edit-index])))
+
+(defn copy-question [{:keys [edit-index] :as state-info}]
+  (let [question (get-in state-info [:question-map edit-index])
+        [question-id updated-info] (model/clone-question state-info question)]
+    (assoc-in updated-info [:clipboard :question-list] [question-id])))
 
 (defn paste-question [ord {:keys [edit-index clipboard] :as state-info}]
   (let [cut-data (:question-list clipboard)]
@@ -276,7 +290,7 @@
         move-down-fn #(update % :question-list vswap ord (inc ord))
         paste-fn (partial paste-question ord)
         to-trash-fn (partial model/move-question-to-trash index)
-        clipboard-empty? (empty? (get-in @state [:clipboard :question-list]))]
+        clipboard-empty?  (empty? (get-in @state [:clipboard :question-list]))]
    ^{:key index}
     [:div.container
       [:div.row
@@ -292,6 +306,10 @@
          {:type :button
           :value "Cut"
           :on-click #(swap! state (undoable :cut cut-question))}]
+        [:input.mr-1.mb-1
+         {:type :button
+          :value "Copy"
+          :on-click #(swap! state (undoable :cut copy-question))}]
         [:input.mr-1.mb-1
          {:type :button
           :value "Paste"
@@ -447,7 +465,6 @@
     [:ul
       [:li "Questions TO-DO"
         [:ul
-          [:li "Allow cut / copy / paste"]
           [:li "Purge unused custom answer types"]]]]
     [:br]
     [save-button-status state]

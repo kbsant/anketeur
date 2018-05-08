@@ -160,14 +160,22 @@
 (defn get-new-question [state-info]
   (get-in state-info [:question-map :new-question]))
 
+(defn clone-question
+  "Clone a question, assigning a new id."
+  [state-info question]
+  (if-not question
+    [nil state-info]
+    (let [question-id (next-item-id (:question-map state-info))
+          question-info (assoc question :index question-id)
+          state-info (assoc-in state-info [:question-map question-id] question-info)]
+      [question-id state-info])))
+
 (defn add-question
   "Add a question to both the question index and list.
   To update the state, use this function with swap! ."
   [state-info question]
-  (let [question-id (next-item-id (:question-map state-info))
-        question-info (assoc question :index question-id)]
-    (-> state-info
-      (assoc-in [:question-map question-id] question-info)
+  (let [[question-id updated-info] (clone-question state-info question)]
+    (-> updated-info
       (update :question-list conj question-id)
       (assoc :edit-index question-id))))
 
@@ -192,9 +200,8 @@
 (defn select-answer-type [question-index answer-index state-info]
   (assoc-in state-info [:question-map question-index :answer-type] answer-index))
 
-;; TODO could refactor this - common logic with add-question
 (defn add-answer-type
-  "Add a question to both the question index and list.
+  "Add an answer type and associate it with the currently edited question.
   To update the state, use this function with swap! ."
   ([state-info]
    (add-answer-type state-info blank-option))
