@@ -408,12 +408,21 @@
             (map-indexed render-question questions)))
         [question-adder state]])))
 
+(defn unused-answer-types
+  [{:keys [question-list question-map answer-types] :as state-info}]
+  (let [active-questions (map question-map question-list)
+        active-answers (->> active-questions (map :answer-type) (into #{}))
+        all-custom (->> (vals answer-types) (remove :predefined) (map :custom-index))]
+    (->> (remove active-answers all-custom)
+         (map answer-types))))
+
 (defn trash-list [state]
   (fn []
     (let [state-info @state
           {:keys [trash question-map]} state-info
-          {:keys [question-list answer-type-list]} trash
-          questions (map #(get question-map %) question-list)]
+          {:keys [question-list]} trash
+          questions (map #(get question-map %) question-list)
+          unused-answers (unused-answer-types state-info)]
       [:div.container
         (when (empty? question-list) [:p "No deleted questions."])
         (map-indexed
@@ -435,7 +444,14 @@
                     #(swap! state
                       (undoable :trash (partial model/purge-question-from-trash index)))}]]
               [:div.col-xs-10 (form/preview-question state-info question)]])
-          questions)])))
+          questions)
+        (when (seq unused-answers)
+          [:p "Unused answer types"])
+        (map-indexed
+          (fn [i answer-type]
+            ^{:key i}
+            [:p (str answer-type)])
+          unused-answers)])))
 
 (defn toggle-trash-button [state]
   (let [trash-visible? (= :trash (get-in @state [:client-state :view]))
@@ -465,6 +481,7 @@
     [:ul
       [:li "Questions TO-DO"
         [:ul
+          [:li "Resolve label conflicts between custom answer types"]
           [:li "Purge unused custom answer types"]]]]
     [:br]
     [save-button-status state]
