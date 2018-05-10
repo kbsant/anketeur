@@ -213,6 +213,18 @@
          (assoc-in $ [:answer-types answer-id] answer-info)
          (select-answer-type edit-question-id answer-id $)))))
 
+(defn unused-answer-types
+  "Find answer-types that are not used in any questions"
+  [{:keys [question-list question-map answer-types] :as state-info}]
+  (let [active-questions (map question-map question-list)
+        active-answers (->> active-questions (map :answer-type) (into #{}))
+        all-custom (->> (vals answer-types) (remove :predefined) (map :custom-index))]
+    (->> (remove active-answers all-custom)
+         (map answer-types))))
+
+(defn purge-answer-type [custom-index state-info]
+  (update state-info :answer-types dissoc custom-index))
+
 (defn add-coll-answers [answers {:keys [index] :as question-info}]
   (let [coll-answers (map #(get % (str index)) answers)]
     (assoc question-info :coll-answers coll-answers)))

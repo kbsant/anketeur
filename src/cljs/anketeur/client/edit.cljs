@@ -408,23 +408,18 @@
             (map-indexed render-question questions)))
         [question-adder state]])))
 
-(defn unused-answer-types
-  [{:keys [question-list question-map answer-types] :as state-info}]
-  (let [active-questions (map question-map question-list)
-        active-answers (->> active-questions (map :answer-type) (into #{}))
-        all-custom (->> (vals answer-types) (remove :predefined) (map :custom-index))]
-    (->> (remove active-answers all-custom)
-         (map answer-types))))
-
 (defn trash-list [state]
   (fn []
     (let [state-info @state
           {:keys [trash question-map]} state-info
           {:keys [question-list]} trash
           questions (map #(get question-map %) question-list)
-          unused-answers (unused-answer-types state-info)]
-      [:div.container
-        (when (empty? question-list) [:p "No deleted questions."])
+          unused-answers (model/unused-answer-types state-info)]
+      [:div.container.trash-area
+        [:p
+          (if (empty? question-list)
+            "No deleted questions."
+            [:span.font-weight-bold "Deleted Questions"])]
         (map-indexed
           (fn [i {:keys [index] :as question}]
             ^{:key i}
@@ -446,11 +441,23 @@
               [:div.col-xs-10 (form/preview-question state-info question)]])
           questions)
         (when (seq unused-answers)
-          [:p "Unused answer types"])
+          [:p.font-weight-bold "Unused Answer Types"])
         (map-indexed
-          (fn [i answer-type]
+          (fn [i {:keys [custom-index option-text] :as answer-type-info}]
             ^{:key i}
-            [:p (str answer-type)])
+            [:div.row
+              [:div.col-xs-1]
+              [:div.col-xs-1
+                [:input
+                  {:type :button
+                   :value "x"
+                   :on-click
+                    #(swap! state
+                      (undoable :trash (partial model/purge-answer-type custom-index)))}]]
+              [:div.col-xs-10
+                [:p option-text]
+                (when-let [render-fn (form/render-answer-type answer-type-info)]
+                  (render-fn i nil nil))]])
           unused-answers)])))
 
 (defn toggle-trash-button [state]
@@ -481,8 +488,7 @@
     [:ul
       [:li "Questions TO-DO"
         [:ul
-          [:li "Resolve label conflicts between custom answer types"]
-          [:li "Purge unused custom answer types"]]]]
+          [:li "Resolve label conflicts between custom answer types"]]]]
     [:br]
     [save-button-status state]
     [:br]])

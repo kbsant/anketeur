@@ -52,11 +52,12 @@
    :checkbox (partial render-template-radio-or-checkbox :checkbox)
    :text-area render-answer-text-area})
 
-(defn render-answer-type [state-info answer-type]
-  (let [{:keys [template params]} (get-in state-info [:answer-types answer-type])
-        render-fn (get answer-templates template)]
-    (when render-fn
-      (render-fn params))))
+(defn render-answer-type
+  ([state-info answer-type]
+   (render-answer-type (get-in state-info [:answer-types answer-type])))
+  ([{:keys [template params]}]
+   (when-let [render-fn (get answer-templates template)]
+     (render-fn params))))
 
 (defn render-question
   [state-info
