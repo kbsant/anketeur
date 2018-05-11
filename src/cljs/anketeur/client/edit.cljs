@@ -188,16 +188,6 @@
             ^{:key i}
             [:option (when custom-index {:value custom-index}) option-text]))))
 
-(defn update-text-answer-params
-  "Split a multi-line string containing custom text values into a vector of string values
-  and update the custom answer type."
-  [params value]
-  (let [text-value (or value "")
-        values (->> (string/split-lines text-value)
-                    (remove string/blank?)
-                    (into []))]
-    (assoc params :values values :text text-value)))
-
 (defn answer-text-input-fn [state custom-index {:keys [values text] :as params}]
   (let [edit-text (or text (string/join "\n" values) "")
         rows (-> (count values) (or 1) inc)]
@@ -210,15 +200,11 @@
         #(swap! state
           (undoable :text
             (ui/js-update-in-fn
-              [:answer-types custom-index :params] update-text-answer-params %)))}]))
+              [:answer-types custom-index :params] model/update-text-answer-params %)))}]))
 
-(defn update-num-answer-params [params value]
-  (let [max (when value (js/parseInt value))
-        values (when max (into [] (map str (range 1 (inc max)))))]
-    (merge
-      params
-      {:values values
-       :range [max]})))
+(defn update-num-answer-params-js [params value]
+  (let [max (when value (js/parseInt value))]
+    (model/update-num-answer-params params max)))
 
 (defn answer-num-input-fn [state custom-index params]
   (let [default-value 5
@@ -233,7 +219,7 @@
           #(swap! state
             (undoable :text
               (ui/js-update-in-fn
-                [:answer-types custom-index :params] update-num-answer-params %)))}]))
+                [:answer-types custom-index :params] update-num-answer-params-js %)))}]))
 
 (def answer-param-input-renderers
   {:text answer-text-input-fn
@@ -488,7 +474,7 @@
     [:ul
       [:li "Questions TO-DO"
         [:ul
-          [:li "Resolve label conflicts between custom answer types"]]]]
+          [:li "Errors while saving page should not auto-fade"]]]]
     [:br]
     [save-button-status state]
     [:br]])

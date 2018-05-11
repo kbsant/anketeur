@@ -1,4 +1,6 @@
-(ns anketeur.model)
+(ns anketeur.model
+  (:require
+    [clojure.string :as string]))
 
 (def yes-no-option
   {:option-text "Yes / No"
@@ -101,6 +103,26 @@
       :param-type :rating
       :params {:values [] :range [5]}}]))
 
+(defn update-text-answer-params
+  "Split a multi-line string containing custom text values into a vector of string values
+  and update the custom answer type."
+  [params value]
+  (let [text-value (or value "")
+        values (->> (string/split-lines text-value)
+                    (remove string/blank?)
+                    (into []))]
+    (assoc params :values values :text text-value)))
+
+(defn update-num-answer-params [params max]
+  (let [values (when max (into [] (map str (range 1 (inc max)))))]
+    (assoc params :values values :range [max])))
+
+(defn init-param-values [param-type params]
+  (condp = param-type
+    :rating (update-num-answer-params params (get-in params [:range 0]))
+    :text (update-text-answer-params params (:text params))
+    params))
+
 (defn merge-from-template
   "Set the template of the target. Preserve the params if already set."
   [target custom-template]
@@ -110,7 +132,7 @@
         save-params (or (:params target) (:params base))]
     (-> target
         (merge base {:custom-template custom-template})
-        (assoc :params save-params))))
+        (assoc :params (init-param-values (:param-type base) save-params)))))
 
 (def empty-survey-info
       {:surveyname ""
