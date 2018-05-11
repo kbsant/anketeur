@@ -116,8 +116,9 @@
        :handler #(do (swap! state assoc-in [:client-state :save-status] %)
                      (fade-save-status state)
                      (when handler-fn (handler-fn)))
-       ;; TODO dont fade out error after saving
-       :error-handler #(swap! state assoc-in [:client-state :save-status] (str %))}))))
+       :error-handler
+         #(swap! state assoc-in [:client-state :error-status]
+                 "The session has expired. Please reload the page.")}))))
 
 (defn save-and-export! [uri]
   (save-doc! #(.open js/window uri)))
@@ -128,7 +129,7 @@
       (save-doc!))))
 
 (defn save-button-status [state]
-  (let [save-status (get-in @state [:client-state :save-status])]
+  (let [{:keys [save-status error-status]} (:client-state @state)]
      [:form.inline
       [:input.mr-1
         {:type :button
@@ -136,11 +137,13 @@
          :on-click #(save-doc!)}]
       [:span
         {:style (ui/fade-opacity save-status)}
-        save-status]]))
+        save-status]
+      (when-not (string/blank? error-status) [:span.alert.alert-danger error-status])]))
+
 
 (defn save-control-group [state]
   (let [{:keys [client-state surveyname surveyno description]} @state
-        {:keys [export-link-base response-link-base save-status]} client-state
+        {:keys [export-link-base response-link-base save-status error-status]} client-state
         export-uri (str export-link-base "EDN/id/" surveyno)
         response-uri (str response-link-base surveyno)]
     [:div.container
@@ -166,6 +169,9 @@
         [:span
            {:style (ui/fade-opacity save-status)}
            save-status]]
+      (when-not (string/blank? error-status)
+        [:div.row
+          [:span.alert.alert-danger error-status]])
       [:div.row
         [:span "Properties..."]]
       [:div.row
@@ -471,10 +477,6 @@
     (when (= :trash (get-in @state [:client-state :view]))
       [trash-list state])
     [question-list state]
-    [:ul
-      [:li "Questions TO-DO"
-        [:ul
-          [:li "Errors while saving page should not auto-fade"]]]]
     [:br]
     [save-button-status state]
     [:br]])
