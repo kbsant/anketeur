@@ -35,8 +35,9 @@
        :handler #(do
                    (swap! state assoc-in [:client-state :save-status] %)
                    (action-after state))
-       ;;TODO dont fade error
-       :error-handler #(swap! state assoc-in [:client-state :save-status] (str %))}))))
+       :error-handler
+         #(swap! state assoc-in [:client-state :error-status]
+                 "The session has expired. Please reload the page.")}))))
 
 (defn save-if-changed! []
   (let [params (select-keys @state [:surveyno :answers])]
@@ -66,20 +67,23 @@
             (map render-question questions)])])))
 
 (defn save-control-group [form-id state]
-  [:form.inline
-    {:id form-id :action (str "/answer/completed/" (:surveyno @state)) :method :GET}
-    [:input.mr-1
-      {:type :button
-       :value "Save"
-       :on-click #(save-answers!)}]
-    [:input.mr-1
-      {:type :button
-       :value "Save and complete"
-       :on-click #(save-answers! (fn [](submit form-id)))}]
-    (let [save-status (get-in @state [:client-state :save-status])]
+  (let [{:keys [client-state surveyno]} @state
+        {:keys [save-status error-status]} client-state]
+    [:form.inline
+      {:id form-id :action (str "/answer/completed/" surveyno) :method :GET}
+      [:input.mr-1
+        {:type :button
+         :value "Save"
+         :on-click #(save-answers!)}]
+      [:input.mr-1
+        {:type :button
+         :value "Save and complete"
+         :on-click #(save-answers! (fn [](submit form-id)))}]
       [:span
-       {:style (ui/fade-opacity save-status)}
-       save-status])])
+        {:style (ui/fade-opacity save-status)}
+        save-status]
+      (when-not (string/blank? error-status)
+        [:span.alert.alert-danger error-status])]))
 
 (defn home-page []
   [:div.container
