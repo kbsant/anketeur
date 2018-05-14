@@ -75,3 +75,19 @@ body {
 .trash-area {
   background-color: lightgray;
 }
+
+.main-tile a {
+  text-align: center;
+}
+.main-tile a img {
+  width: 64px;
+  height: 64px;
+  clear: none;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.main-tyle a p {
+  text-align: center;
+}
