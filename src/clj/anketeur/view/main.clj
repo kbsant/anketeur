@@ -7,10 +7,6 @@
   [:div.container
     (form/navbar [:h1 appname])
     (when message [:p message])
-    [:ul
-     [:li "TODO"
-      [:ul
-       [:li "login"]]]]
     [:div.container
       [:div.row
         [:div.col-xs-4.main-tile

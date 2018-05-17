@@ -282,6 +282,6 @@
                       (questions-with-answer-keys answer-types)
                       (questions-with-coll-answers answers)
                       (questions-with-agg-answers))]
-    {:survey-info (select-keys survey-info [:surveyno :surveyname])
+    {:survey-info (select-keys survey-info [:surveyno :surveyname :description])
      :question-answer-agg aggregated}))
 

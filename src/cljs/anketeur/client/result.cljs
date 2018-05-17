@@ -10,10 +10,22 @@
 (defonce state
   (r/atom {}))
 
-(def answer-template
+(def answer-template-labels
   {:radio "Single selection"
    :checkbox "Multiple selection"
    :text-area "Freeform"})
+
+(defn render-free-form [coll-answers]
+  [:div
+    [:p "Freeform - not be aggregated"]
+    [:table.table
+      (->> coll-answers
+        (remove string/blank?)
+        (map-indexed
+          (fn [i answer]
+            ^{:key i}
+            [:tr
+              [:td answer]])))]])
 
 (defn render-item
   [itemno {:keys [pos question-text template answer-keys answer-agg coll-answers]}]
@@ -22,13 +34,11 @@
     [:p
       [:span.mr-1.font-weight-bold (str pos)]
       [:span.mr-1 question-text]
-      [:span.label.label-info (get answer-template template)]]
+      [:span.label.label-info (get answer-template-labels template)]]
     (when-not (= :static template)
       (if (empty? answer-keys)
-        [:div
-          [:p "This questions has free-form answers only, which cannot be aggregated. The answers are:"]
-          [:p (str coll-answers)]]
-        [:div
+        (render-free-form coll-answers)
+       [:div
           [:p "Aggregated answers:"]
           [:ul
             (map
@@ -39,12 +49,19 @@
 
 (defn home-page []
   (let [{:keys [survey-info export-link-base question-answer-agg] :as state-info} @state
-                surveyno (:surveyno survey-info)]
+        {:keys [surveyno surveyname description]} survey-info]
     [:div.container
       [:h1 "Survey results"]
       [:p "Export to"
         [:a.ml-1 {:href (str export-link-base "JSON/id/" surveyno)} "JSON"]
         [:a.ml-1 {:href (str export-link-base "EDN/id/" surveyno)} "EDN"]]
+      [:h4 surveyname]
+      [:p description]
+      [:ul
+        [:li "TODO"
+          [:ul
+            [:li "Number of responses / completed"]
+            [:li "Display graph / edit graph type"]]]]
       (map-indexed render-item question-answer-agg)]))
 
 (defn mount-components []
