@@ -15,20 +15,42 @@
    :checkbox "Multiple selection"
    :text-area "Freeform"})
 
-(defn render-free-form [coll-answers]
+(defn render-free-form [{:keys [coll-answers]}]
   [:div
     [:p "Freeform - not be aggregated"]
     [:table.table
-      (->> coll-answers
+      [:tbody
+       (->> coll-answers
         (remove string/blank?)
         (map-indexed
           (fn [i answer]
             ^{:key i}
             [:tr
-              [:td answer]])))]])
+              [:td answer]])))]]])
+
+(defn render-bar-chart [{:keys [answer-keys answer-agg]}]
+  (let [agg-total (reduce + 0 (vals answer-agg))]
+    [:div
+      [:p "Aggregated answers:"]
+      [:table.table
+        [:tbody
+          (map
+            (fn [key]
+              (let [item-agg (get answer-agg key)]
+                ^{:key key}
+                [:tr
+                  [:td (str key)]
+                  [:td (str item-agg)]
+                  [:td]]))
+            answer-keys)]
+        [:tfoot
+          [:tr
+            [:td "Total"]
+            [:td agg-total]
+            [:td]]]]]))
 
 (defn render-item
-  [itemno {:keys [pos question-text template answer-keys answer-agg coll-answers]}]
+  [itemno {:keys [pos question-text template answer-keys answer-agg] :as agg}]
   ^{:key itemno}
   [:div.row.ml-1.pl-1
     [:p
@@ -37,15 +59,8 @@
       [:span.label.label-info (get answer-template-labels template)]]
     (when-not (= :static template)
       (if (empty? answer-keys)
-        (render-free-form coll-answers)
-       [:div
-          [:p "Aggregated answers:"]
-          [:ul
-            (map
-              (fn [key]
-                ^{:key key}
-                [:li (str key " : " (get answer-agg key))])
-              answer-keys)]]))])
+        (render-free-form agg)
+        (render-bar-chart agg)))])
 
 (defn home-page []
   (let [{:keys [survey-info export-link-base question-answer-agg] :as state-info} @state
