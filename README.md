@@ -6,8 +6,8 @@ Anketeur is a small, flexible web app for conducting surveys.
 
 ## Status
 
-Work In Progress -- Early stage.
-A demo is accessible online at: http://anketeur.herokuapp.com/
+Work In Progress
+A demo is accessible online at: http://anketeur.herokuapp.com/ (runs on a limited dyno which may take a while to spin up)
 
 ## Goals
 
