@@ -36,17 +36,26 @@
         [:tbody
           (map
             (fn [key]
-              (let [item-agg (get answer-agg key)]
+              (let [item-agg (get answer-agg key)
+                    percent (some-> item-agg (* 100) (/ agg-total) int (str "%"))]
+
                 ^{:key key}
                 [:tr
                   [:td (str key)]
                   [:td (str item-agg)]
-                  [:td]]))
+                  [:td
+                    [:div
+                      {:style {:width "10em" :height "0.5em" :border "solid 1px gray"}}
+                      [:div
+                        {:style {:width percent :height "100%" :background-color "darkblue" :font-size "1pt"}
+                         :dangerouslySetInnerHTML {:__html "&nbsp;"}}]]]
+                  [:td percent]]))
             answer-keys)]
         [:tfoot
           [:tr
             [:td "Total"]
             [:td agg-total]
+            [:td]
             [:td]]]]]))
 
 (defn render-item
