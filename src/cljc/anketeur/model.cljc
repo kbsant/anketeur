@@ -283,5 +283,6 @@
                       (questions-with-coll-answers answers)
                       (questions-with-agg-answers))]
     {:survey-info (select-keys survey-info [:surveyno :surveyname :description])
+     :answer-count (count answers)
      :question-answer-agg aggregated}))
 

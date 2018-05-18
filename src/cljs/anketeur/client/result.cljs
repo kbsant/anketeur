@@ -15,10 +15,16 @@
    :checkbox "Multiple selection"
    :text-area "Freeform"})
 
-(defn render-free-form [{:keys [coll-answers]}]
+(defn render-thead [template]
+  [:thead
+   {:style {:color "gray"}}
+   [:tr
+    [:td [:span.label.label-info (get answer-template-labels template)]]]])
+
+(defn render-free-form [{:keys [template coll-answers]}]
   [:div
-    [:p "Freeform - not be aggregated"]
     [:table.table
+      (render-thead template)
       [:tbody
        (->> coll-answers
         (remove string/blank?)
@@ -43,11 +49,11 @@
        :dangerouslySetInnerHTML
         {:__html "&nbsp;"}}]])
 
-(defn render-bar-chart [{:keys [answer-keys answer-agg]}]
+(defn render-bar-chart [{:keys [template answer-keys answer-agg]}]
   (let [agg-total (reduce + 0 (vals answer-agg))]
     [:div
-      [:p "Aggregated answers:"]
       [:table.table
+        (render-thead template)
         [:tbody
           (map
             (fn [key]
@@ -73,15 +79,15 @@
   [:div.row.ml-1.pl-1
     [:p
       [:span.mr-1.font-weight-bold (str pos)]
-      [:span.mr-1 question-text]
-      [:span.label.label-info (get answer-template-labels template)]]
+      [:span.mr-1 question-text]]
     (when-not (= :static template)
       (if (empty? answer-keys)
         (render-free-form agg)
         (render-bar-chart agg)))])
 
 (defn home-page []
-  (let [{:keys [survey-info export-link-base question-answer-agg] :as state-info} @state
+  (let [{:keys [survey-info export-link-base question-answer-agg answer-count]
+         :as state-info} @state
         {:keys [surveyno surveyname description]} survey-info]
     [:div.container
       [:h1 "Survey results"]
@@ -90,11 +96,7 @@
         [:a.ml-1 {:href (str export-link-base "EDN/id/" surveyno)} "EDN"]]
       [:h4 surveyname]
       [:p description]
-      [:ul
-        [:li "TODO"
-          [:ul
-            [:li "Number of responses / completed"]
-            [:li "Display graph / edit graph type"]]]]
+      [:p (str "Number of responses: " answer-count)]
       (map-indexed render-item question-answer-agg)]))
 
 (defn mount-components []
