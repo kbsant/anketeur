@@ -28,6 +28,21 @@
             [:tr
               [:td answer]])))]]])
 
+(defn render-bar-percent [parent-width percent]
+  [:div
+    {:style
+     {:width parent-width
+      :height "0.5em"
+      :border "solid 1px gray"}}
+    [:div
+      {:style
+       {:width percent
+        :height "100%"
+        :background-color "darkblue"
+        :font-size "1pt"}
+       :dangerouslySetInnerHTML
+        {:__html "&nbsp;"}}]])
+
 (defn render-bar-chart [{:keys [answer-keys answer-agg]}]
   (let [agg-total (reduce + 0 (vals answer-agg))]
     [:div
@@ -38,17 +53,11 @@
             (fn [key]
               (let [item-agg (get answer-agg key)
                     percent (some-> item-agg (* 100) (/ agg-total) int (str "%"))]
-
                 ^{:key key}
                 [:tr
                   [:td (str key)]
                   [:td (str item-agg)]
-                  [:td
-                    [:div
-                      {:style {:width "10em" :height "0.5em" :border "solid 1px gray"}}
-                      [:div
-                        {:style {:width percent :height "100%" :background-color "darkblue" :font-size "1pt"}
-                         :dangerouslySetInnerHTML {:__html "&nbsp;"}}]]]
+                  [:td (render-bar-percent "10em" percent)]
                   [:td percent]]))
             answer-keys)]
         [:tfoot
