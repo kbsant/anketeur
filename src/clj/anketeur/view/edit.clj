@@ -1,15 +1,16 @@
 (ns anketeur.view.edit
   (:require
     [anketeur.view.parts :as parts]
+    [anketeur.view.doclist :as doclist]
     [hiccup.page :as page]))
 
 (defn opener [data]
-  (let [init-state (merge
+  (let [view-state (merge
                      (select-keys data [:glossary :flash-errors :doclist :add-link :open-link-base])
                      {:headline "Survey Editor"
                       :add-subhead "Create a Survey"
                       :open-subhead "Edit a Survey"})]
-    (parts/spa-appbase data init-state "anketeur.client.opener.init();")))
+    (doclist/render view-state)))
 
 (defn editor [data]
   (parts/appbase

@@ -54,35 +54,6 @@
       (->> parent-seq (filter #(.-checked %)) (map #(.-value %)))
       (.-value parent))))
 
-(defn anti-forgery-field [csrf-token]
-  [:input.__anti-forgery-token
-    {:name "__anti-forgery-token"
-     :type :hidden
-     :value csrf-token}])
-
-(defn render-selector-row
-  [link-fn i {:keys [surveyname] :as survey-info}]
-  ^{:key i}
-  [:li
-    [:a
-      {:href (link-fn survey-info)}
-      (or surveyname [:span.label.label-default "(no name)"])]])
-
-(defn doc-selector [link-fn {:keys [doclist]}]
-  (let [row-renderer (partial render-selector-row link-fn)]
-    (when-not (empty? doclist)
-      [:ul
-        (map-indexed row-renderer doclist)])))
-
-(defn errors-div [errors-key state]
-  (when-let [errors (get @state errors-key)]
-    [:div
-      (->> errors
-        (map-indexed
-          (fn [i error]
-            ^{:key i}
-            [:p.text-danger error])))]))
-
 (defn fade-opacity [check-string]
    (if (string/blank? check-string)
       {:opacity 1}

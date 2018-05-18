@@ -2,6 +2,7 @@
   (:require
     [clojure.string :as string]
     [anketeur.client.ui :as ui]
+    [anketeur.form :as form]
     [reagent.core :as r]))
 
 (defonce state
@@ -10,26 +11,7 @@
 
 (defn doc-opener [state]
   (fn []
-    (let [{:keys [headline add-subhead add-link open-subhead open-link-base]} @state]
-      [:div.row
-        [:h1 headline]
-        (when add-link
-          [:div
-            [:h4 add-subhead]
-            [:form.inline
-              {:method :post
-               :action add-link}
-              [ui/anti-forgery-field js/csrfToken]
-              [:input
-               {:type :hidden
-                :name ""}]
-              [:input
-                {:type :submit
-                 :value "Create new"}]]])
-        [:h4 open-subhead]
-        (when (nil? add-link)
-          [ui/errors-div :flash-errors state])
-        (ui/doc-selector #(str open-link-base (:surveyno %)) @state)])))
+    (form/open-doclist (assoc @state :csrf-token js/csrfToken))))
 
 (defn home-page []
   [:div.container
