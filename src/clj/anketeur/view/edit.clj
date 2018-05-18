@@ -6,7 +6,7 @@
 
 (defn opener [data]
   (let [view-state (merge
-                     (select-keys data [:glossary :flash-errors :doclist :add-link :open-link-base])
+                     (select-keys data [:csrf-token :glossary :flash-errors :doclist :add-link :open-link-base])
                      {:headline "Survey Editor"
                       :add-subhead "Create a Survey"
                       :open-subhead "Edit a Survey"})]

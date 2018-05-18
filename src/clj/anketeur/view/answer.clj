@@ -1,6 +1,7 @@
 (ns anketeur.view.answer
   (:require
     [anketeur.view.parts :as parts]
+    [anketeur.view.doclist :as doclist]
     [anketeur.model :as model]
     [anketeur.form :as form]
     [ring.util.anti-forgery :refer [anti-forgery-field]]
@@ -36,11 +37,11 @@
     (add-content survey-info)))
 
 (defn opener [data]
-  (let [init-state (merge
+  (let [view-state (merge
                      (select-keys data [:glossary :flash-errors :doclist :open-link-base])
                      {:headline "Respond to a Survey"
                       :open-subhead "Open"})]
-    (parts/spa-appbase data init-state "anketeur.client.opener.init();")))
+    (doclist/render view-state)))
 
 (defn responder [{:keys [survey-info surveyno formno flash-errors] :as data}]
   (parts/appbase
