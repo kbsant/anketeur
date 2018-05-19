@@ -20,41 +20,6 @@
      :type :hidden
      :value csrf-token}])
 
-(defn render-selector-row
-  [link-fn i {:keys [surveyname] :as survey-info}]
-  ^{:key i}
-  [:li
-    [:a
-      {:href (link-fn survey-info)}
-      (or surveyname [:span.label.label-default "(no name)"])]])
-
-(defn doc-selector [link-fn {:keys [doclist]}]
-  (let [row-renderer (partial render-selector-row link-fn)]
-    (when-not (empty? doclist)
-      [:ul
-        (map-indexed row-renderer doclist)])))
-
-(defn open-doclist
-  [{:keys
-     [csrf-token flash-errors headline add-subhead add-link open-subhead open-link-base] 
-    :as state-info}]
-  [:div.row
-    [:h1 headline]
-    (when add-link
-      [:div
-        [:h4 add-subhead]
-        [:form.inline
-          {:method :post
-           :action add-link}
-          (anti-forgery-field csrf-token)
-          [:input
-            {:type :submit
-             :value "Create new"}]]])
-    [:h4 open-subhead]
-    (when (nil? add-link)
-      (errors-div flash-errors))
-    (doc-selector #(str open-link-base (:surveyno %)) state-info)])
-
 (defn with-change-handler [m handler index]
   (cond-> m
     handler (assoc :on-change #(handler index %))))

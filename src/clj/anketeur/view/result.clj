@@ -7,8 +7,7 @@
 (defn opener [data]
   (let [view-state (merge
                      (select-keys data [:glossary :flash-errors :doclist :open-link-base])
-                     {:headline "Survey Results"
-                      :open-subhead "Open"})]
+                     {:headline "Survey Results"})]
     (doclist/render view-state)))
 
 (defn result-page [{:keys [survey-info flash-errors] :as data}]

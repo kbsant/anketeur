@@ -69,11 +69,11 @@
       [:div#app
         [:div.container
           [:div.jumbotron [:h1 (glossary :title)]]
-          [:div.three-quarters-loader "Loading… (requires javascript and html5)"]
+          [:div.three-quarters-loader "Loading… (uses javascript)"]
           (or
             content
             [:noscript
-              [:p "This application requires javascript, but it seems to be disabled. Please enable it and reload."]])]]]))
+              [:p "This page uses javascript, but it seems to be disabled. Please enable it and reload."]])]]]))
 
 (defn spa-appbase [view-data init-state app-js]
   (appbase

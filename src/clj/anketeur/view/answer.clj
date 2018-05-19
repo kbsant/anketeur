@@ -39,8 +39,7 @@
 (defn opener [data]
   (let [view-state (merge
                      (select-keys data [:glossary :flash-errors :doclist :open-link-base])
-                     {:headline "Respond to a Survey"
-                      :open-subhead "Open"})]
+                     {:headline "Respond to a Survey"})]
     (doclist/render view-state)))
 
 (defn responder [{:keys [survey-info surveyno formno flash-errors] :as data}]

@@ -88,6 +88,30 @@ body {
   margin-right: auto;
 }
 
-.main-tyle a p {
+.main-tile a p {
+  text-align: center;
+}
+.toolbar-tile a {
+  text-align: center;
+}
+.toolbar-tile button {
+  background: none;
+  border: none;
+  color: gray;
+}
+.toolbar-tile button:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+.toolbar-tile button img, .toolbar-tile a img {
+  width: 32px;
+  height: 32px;
+  clear: none;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.toolbar-tile a p {
   text-align: center;
 }
