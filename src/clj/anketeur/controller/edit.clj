@@ -14,8 +14,17 @@
   (let [doc (survey/insert-survey nil nil)
         surveyno (:surveyno doc)]
     (if surveyno
-      (-> (response/see-other (str "/edit/id/" surveyno)))
-      (-> (response/internal-server-error "Internal error: Unable to add new document.")))))
+      (response/see-other (str "/edit/id/" surveyno))
+      (layout/error-page
+        {:status 500 :title "Error" :message "Can't add a new document"}))))
+
+(defn file-action [{:keys [params] :as request}]
+  (let [{:keys [fileaction surveyno]} params]
+    (log/info "file-action action:" fileaction " surveyno:" surveyno)
+    (condp = fileaction
+      "new" (add-action)
+      (layout/error-page {:status 500 :title "Not yet implemented" :message "Can't copy or delete"}))))
+
 ;; TODO sanitize/validate form data
 (defn save-action [{:keys [params] :as request}]
   (let [{:keys [survey-info]} params
@@ -29,7 +38,7 @@
   (layout/render-hiccup
     view.edit/opener
     {:glossary {:title "Create or Edit a Survey"}
-     :add-link "/add"
+     :file-link "/fileaction"
      :open-link-base "/edit/id/"
      :doclist (->> (survey/query-docs nil)
                    vals

@@ -10,7 +10,7 @@
 
 (defroutes home-routes
   (GET "/" [] (main/render))
-  (POST "/add" [] (edit/add-action))
+  (POST "/fileaction" request (edit/file-action request))
   (POST "/save" request (edit/save-action request))
   (GET "/answer" [] (answer/render-opener))
   (GET "/answer/completed/:surveyno" [surveyno] (answer/completed surveyno))

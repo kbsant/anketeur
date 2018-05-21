@@ -5,11 +5,7 @@
     [hiccup.page :as page]))
 
 (defn opener [data]
-  (let [view-state (merge
-                     (select-keys
-                       data
-                       [:csrf-token :glossary :flash-errors :doclist :add-link :open-link-base])
-                     {:headline "Survey Editor"})]
+  (let [view-state (merge data {:headline "Survey Editor"})]
     (doclist/render view-state)))
 
 (defn editor [data]
