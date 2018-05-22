@@ -1,8 +1,7 @@
 (ns anketeur.view.doclist
   (:require
     [anketeur.form :as form]
-    [anketeur.view.parts :as parts]
-    [clojure.string :as string]))
+    [anketeur.view.parts :as parts]))
 
 (defn render-selector-row
   [file-link link-fn i {:keys [surveyname surveyno description] :as survey-info}]

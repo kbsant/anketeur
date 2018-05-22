@@ -34,7 +34,8 @@
 
 ;; TODO try-catch and return nil in case of invalid string
 (defn as-id [s]
-  (cond-> s (not (uuid? s)) java.util.UUID/fromString))
+  (when s
+    (cond-> s (not (uuid? s)) java.util.UUID/fromString)))
 
 ;; read a single doc
 (defn read-table-entry [table surveyno]

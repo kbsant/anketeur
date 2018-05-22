@@ -286,3 +286,7 @@
      :answer-count (count answers)
      :question-answer-agg aggregated}))
 
+(defn copy-survey-info [survey-info]
+  (-> survey-info
+      (dissoc :surveyno)
+      (update :surveyname str " (Copy)")))
