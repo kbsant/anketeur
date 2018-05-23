@@ -64,8 +64,11 @@
 
 ;; get a collection of docs
 ;; TODO add query param filter
-(defn query-docs [query-params]
-  (view survey-table))
+(defn query-docs [filter-fn]
+  (->> (view survey-table)
+       vals
+       (filter filter-fn)
+       (into [])))
 
 ;; TODO caller should check if survey-info is nil, then retry
 (defn insert-survey [surveyname roles]
@@ -90,6 +93,13 @@
   (let [upserted-survey-info (upsert-survey survey-info)]
     (flush-table survey-table)
     upserted-survey-info))
+
+(defn update-in-survey! [[surveyno & _ :as keyvec] update-fn]
+  (let [uuid (as-id surveyno)]
+    (when (get (view survey-table) uuid)
+      (swap! (:data survey-table) update-in keyvec update-fn)
+      (flush-table survey-table)
+      (get (view survey-table) uuid))))
 
 (defstate answer-table
   :start (read-app-table "answer-table")

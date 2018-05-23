@@ -12,9 +12,7 @@
   ([]
    (render-opener nil))
   ([view-info]
-   (let [doclist (->> (survey/query-docs nil)
-                    vals
-                    (into []))]
+   (let [doclist (survey/query-docs (complement :deleted?))]
     (layout/render-hiccup
         view.edit/opener
         (merge
@@ -35,16 +33,15 @@
 
 (defn copy-action [survey-info]
   ;; create a new doc, select the new id and redirect to editor
-  (let [doc (survey/upsert-survey (model/copy-survey-info survey-info))
+  (let [doc (survey/save-survey! (model/copy-survey-info survey-info))
         surveyno (:surveyno doc)]
     (if surveyno
       (response/see-other (str "/edit/id/" surveyno))
       (render-opener {:flash-errors ["Error: unable to copy the selected item."]}))))
 
-(defn delete-action [survey-info]
+(defn delete-action [{:keys [surveyno] :as survey-info}]
   ;; create a new doc, select the new id and redirect to editor
-  (let [doc nil #_ (survey/upsert-survey (model/delete-survey-info survey-info))
-        surveyno (:surveyno doc)]
+  (let [result (survey/update-in-survey! [surveyno] #(assoc % :deleted? true))]
     (if surveyno
       (render-opener {:flash-errors ["Warning: can't undo ."]})
       (render-opener {:flash-errors ["Error: unable to delete the selected item."]}))))

@@ -9,9 +9,7 @@
     [ring.util.http-response :as response]))
 
 (defn render-opener []
-  (let [doclist (->> (survey/query-docs nil)
-                   vals
-                   (into []))
+  (let [doclist (survey/query-docs (complement :deleted?))
         errors (when (empty? doclist)
                   ["No documents found. Please create a new document."])]
     (layout/render-hiccup
