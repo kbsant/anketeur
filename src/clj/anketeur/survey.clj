@@ -86,7 +86,7 @@
       uuid-survey-info)))
 
 ;; save a survey doc
-(defn save-survey! [{:keys [survey-info autosave?]}]
+(defn save-survey! [survey-info]
   ;; consider using git as a backend for the doc data.
   ;; queue up and save intermittently if autosave.
   ;; attempt to flush if saved explicitly.
