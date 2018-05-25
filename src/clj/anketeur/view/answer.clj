@@ -63,10 +63,14 @@
         render-question (partial form/preview-question survey-info)]
     [:div.container
       (form/navbar [:a {:href "/"} "Home"])
-      [:h1 (:surveyname survey-info)]
-      [:p (:description survey-info)]
       [:div.row
-        [:span.font-weight-bold (str "Question List (" (count questions) ")")]
+        [:h1 (:surveyname survey-info)]]
+      [:div.row
+        [:p (:description survey-info)]]
+      [:div.row.mb-3
+        [:span.font-weight-bold (str (count questions) " Items")]
+        [:br]]
+      [:div.row
         (when-not (empty? questions)
           [:form#response {:action "/answernojs" :method :POST}
             (anti-forgery-field)

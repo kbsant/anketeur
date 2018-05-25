@@ -76,14 +76,16 @@
 (defn render-item
   [itemno {:keys [pos question-text template answer-keys answer-agg] :as agg}]
   ^{:key itemno}
-  [:div.row.ml-1.pl-1
-    [:p
-      [:span.mr-1.font-weight-bold (str pos)]
-      [:span.mr-1 question-text]]
-    (when-not (= :static template)
-      (if (empty? answer-keys)
-        (render-free-form agg)
-        (render-bar-chart agg)))])
+  [:div.container
+    [:div.row.ml-1.pl-1
+      [:p
+        [:span.mr-1.font-weight-bold (str pos)]
+        [:span.mr-1 question-text]]]
+    [:div.row.ml-1.pl-1
+      (when-not (= :static template)
+        (if (empty? answer-keys)
+          (render-free-form agg)
+          (render-bar-chart agg)))]])
 
 (defn home-page []
   (let [{:keys [survey-info export-link-base question-answer-agg answer-count]

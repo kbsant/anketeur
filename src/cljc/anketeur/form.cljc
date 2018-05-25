@@ -33,22 +33,24 @@
         (map-indexed
           (fn [i input-value]
             ^{:key i}
-            [:label.mr-1
-              [:input.mr-1
-                (with-change-handler
-                  {:type radio-or-checkbox :name input-name :value input-value}
-                  handler
-                  index)]
-              input-value])
+            [:div.form-check
+              [:label.mr-1
+                [:input.mr-1
+                  (with-change-handler
+                    {:type radio-or-checkbox :name input-name :value input-value}
+                    handler
+                    index)]
+                input-value]])
           values)
         (when (and allow-na (= :radio radio-or-checkbox))
-          [:label.mr-1
-            [:input.mr-1
-              (with-change-handler
-                {:type :radio :name input-name :value "Not applicable"}
-                handler
-                index)]
-            "Not applicable"])])))
+          [:div.form-check
+            [:label.m-1
+              [:input.mr-1
+                (with-change-handler
+                  {:type :radio :name input-name :value "Not applicable"}
+                  handler
+                  index)]
+              "Not applicable"]])])))
 
 (defn render-answer-text-area
   "Return an answer renderer function for a text area."
@@ -56,7 +58,7 @@
   (fn [index _ handler]
     (let [input-name (str index)]
       [:div.row.ml-1.pl-1
-        [:textarea
+        [:textarea.w-100
           (with-change-handler
             {:name input-name}
             handler
@@ -79,13 +81,15 @@
    {:keys [index pos question-text answer-type required allow-na] :as question}
    handler]
   ^{:key (str "q." index)}
-  [:div.row
+  [:div.container
+    [:div.row
       [:p
         [:span.mr-1.font-weight-bold (str pos)]
         question-text
-        (when required [:span.alert.alert-info.ml-1.pl-1.py-0.my-0.small "* Required"])]
-      (when-let [answer-renderer (render-answer-type state-info answer-type)]
-        (answer-renderer index question handler))])
+        (when required [:span.alert.alert-info.ml-1.pl-1.py-0.my-0.small "* Required"])]]
+    (when-let [answer-renderer (render-answer-type state-info answer-type)]
+      (answer-renderer index question handler))
+    [:br]])
 
 (defn preview-question [state-info question]
   (render-question state-info question nil))

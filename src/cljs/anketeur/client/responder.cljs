@@ -60,11 +60,12 @@
         [:h1 (:surveyname state-info)]
         [:p (:description state-info)]
         [:ul]
-        [:div.row
-          [:span.font-weight-bold (str "Question List (" (count questions) ")")]]
-        (when-not (empty? questions)
-          [:form {:id form-id}
-            (map render-question questions)])])))
+        [:div.row.mb-3
+          [:span.font-weight-bold (str (count questions) " Items")]]
+        [:div.container
+          (when-not (empty? questions)
+            [:form {:id form-id}
+              (map render-question questions)])]])))
 
 (defn save-control-group [form-id state]
   (let [{:keys [client-state surveyno]} @state
