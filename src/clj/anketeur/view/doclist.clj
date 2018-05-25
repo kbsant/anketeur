@@ -12,8 +12,8 @@
      [:a
       {:href (link-fn survey-info)}
       (or surveyname [:span.label.label-default "(no name)"])]]
-    [:td.doclist description]
-    [:td updated]])
+    [:td.wide-cell description]
+    [:td.narrow-cell updated]])
 
 (defn open-doclist
   [{:keys [open-link-base doclist file-link] :as view-info}]
@@ -25,8 +25,8 @@
          [:tr
           (when file-link [:th {:width "3em"}])
           [:th "Title"]
-          [:th "Description"]
-          [:th "Updated"]]]
+          [:th.wide-cell "Description"]
+          [:th.narrow-cell "Updated"]]]
         [:tbody
           (map-indexed row-renderer doclist)]])))
 

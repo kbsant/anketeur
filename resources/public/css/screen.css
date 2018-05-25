@@ -122,8 +122,18 @@ table.doclist {
 }
 
 .doclist tbody tr td {
-  max-width: 70%;
+  max-width: 80%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.wide-cell {
+  width: 60%;
+}
+
+.narrow-cell {
+  min-width: 5%;
+  max-width: 10%;
+  width: 10%;
 }

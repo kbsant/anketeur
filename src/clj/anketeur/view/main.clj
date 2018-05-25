@@ -9,11 +9,11 @@
     (when message [:p message])
     [:div.container
       [:div.row
-        [:div.col-xs-4.main-tile
+        [:div.col-sm.main-tile
            [:a {:href "/open"} [:img {:src "/img/file.png"}] [:br] [:p "Create or edit a survey"]]]
-        [:div.col-xs-4.main-tile
+        [:div.col-sm.main-tile
           [:a {:href "/answer"} [:img {:src "img/entrance.png"}] [:br] [:p "Respond to a survey"]]]
-        [:div.col-xs-4.main-tile
+        [:div.col-sm.main-tile
            [:a {:href "/result"} [:img {:src "img/calculator.png"}] [:br] [:p "Gather results"]]]]]])
 
 (defn render [{:keys [glossary]}]
