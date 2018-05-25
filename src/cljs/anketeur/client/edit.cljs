@@ -175,12 +175,12 @@
       [:div.row
         [:span "Properties..."]]
       [:div.row
-       [:div.col-xs-8
-        [:textarea.mr-1.w-75
-          {:style {:width "75%"}
-           :placeholder "Description"
+       [:div.col-8
+        [:textarea.w-100
+          {:placeholder "Description"
            :value description
-           :on-change #(swap! state (undoable :text (ui/js-assoc-fn :description %)))}]]]]))
+           :on-change #(swap! state (undoable :text (ui/js-assoc-fn :description %)))}]]
+       [:div.col]]]))
 
 (defn render-select-options
   "Given a map of answer types, render a list of options

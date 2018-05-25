@@ -4,7 +4,7 @@
     [anketeur.view.parts :as parts]))
 
 (defn render-selector-row
-  [file-link link-fn i {:keys [surveyname surveyno description] :as survey-info}]
+  [file-link link-fn i {:keys [surveyname surveyno description updated] :as survey-info}]
   ^{:key i}
   [:tr
     (when file-link [:td [:input {:type :radio :name "surveyno" :value surveyno}]])
@@ -12,7 +12,8 @@
      [:a
       {:href (link-fn survey-info)}
       (or surveyname [:span.label.label-default "(no name)"])]]
-    [:td.doclist description]])
+    [:td.doclist description]
+    [:td updated]])
 
 (defn open-doclist
   [{:keys [open-link-base doclist file-link] :as view-info}]
@@ -24,7 +25,8 @@
          [:tr
           (when file-link [:th {:width "3em"}])
           [:th "Title"]
-          [:th "Description"]]]
+          [:th "Description"]
+          [:th "Updated"]]]
         [:tbody
           (map-indexed row-renderer doclist)]])))
 
