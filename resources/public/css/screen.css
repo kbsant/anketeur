@@ -115,3 +115,15 @@ body {
 .toolbar-tile a p {
   text-align: center;
 }
+
+table.doclist {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.doclist tbody tr td {
+  max-width: 70%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

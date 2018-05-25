@@ -12,14 +12,14 @@
      [:a
       {:href (link-fn survey-info)}
       (or surveyname [:span.label.label-default "(no name)"])]]
-    [:td (cond-> description (> (count description) 40) (subs 0 40))]])
+    [:td.doclist description]])
 
 (defn open-doclist
   [{:keys [open-link-base doclist file-link] :as view-info}]
   (when-not (empty? doclist)
     (let [link-fn #(str open-link-base (:surveyno %))
           row-renderer (partial render-selector-row file-link link-fn)]
-      [:table.table
+      [:table.table.doclist
         [:thead
          [:tr
           (when file-link [:th {:width "3em"}])
