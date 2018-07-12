@@ -6,8 +6,26 @@ Anketeur is a small, flexible web app for conducting surveys.
 
 ## Status
 
-Work In Progress
+Prototype available (stage 1 on the roadmap below).
 A demo is accessible online at: http://anketeur.herokuapp.com/ (runs on a limited dyno which may take a while to spin up)
+
+## Roadmap
+
+### 1. Working prototype
+
+The first step is to have a working prototype, with functionality to create and edit surveys, fill them out, and gather results.
+
+### 2. Decoupled Library
+
+The survey component should be decoupled from the web application into a library. The code for the demo project will be moved into a separate "examples" directory.
+
+### 3. Defined data model
+
+The data model will have an explicit specification. While the model has always been open and portable between json and edn, this step would ensure consistency of data keys and format.
+
+### 4. UI Efficiency and Consistency
+
+Work out and use UI components to improve efficiency, and polish up the UI to make it consistent.
 
 ## Goals
 
