@@ -59,11 +59,6 @@
 (defmethod ig/halt-key! :anketeurweb/survey-table [_ table]
   (flush-table table))
 
-#_
-(defstate survey-table
-  :start (init-demo-survey! (read-app-table "survey-table"))
-  :stop (flush-table survey-table))
-
 ;; use a function because partial needs the table to be mounted first
 (defn read-doc [survey-table surveyno]
   (read-table-entry survey-table surveyno))
@@ -113,11 +108,6 @@
 (defmethod ig/halt-key! :anketeurweb/answer-table [_ table]
   (flush-table table))
 
-#_
-(defstate answer-table
-  :start (read-app-table "answer-table")
-  :stop (flush-table answer-table))
-
 ;; use a function because partial needs the table to be mounted first
 (defn read-answers [answer-table surveyno]
   (read-table-entry answer-table surveyno))
@@ -154,11 +144,6 @@
 
 (defmethod ig/halt-key! :anketeurweb/auth-table [_ table]
   (flush-table table))
-
-#_
-(defstate auth-table
-  :start (read-app-table "auth-table")
-  :stop (flush-table auth-table))
 
 (defn insert-auth [auth-table surveyname surveyno passwd]
   (when surveyno

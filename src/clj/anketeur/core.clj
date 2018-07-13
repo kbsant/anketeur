@@ -34,18 +34,6 @@
   (http/stop httpd))
 
 #_
-(mount/defstate ^{:on-reload :noop}
-                http-server
-                :start
-                (http/start
-                  (-> env
-                      (assoc :handler (handler/app))
-                      (update :io-threads #(or % (* 2 (.availableProcessors (Runtime/getRuntime)))))
-                      (update :port #(or (-> env :options :port) %))))
-                :stop
-                (http/stop http-server))
-
-#_
 (defmethod ig/init-key :anketeurweb/nrepl [_ {:keys [env]}]
   (when-let [nrepl-port (env :nrepl-port)]
     (repl/start {:port nrepl-port})))
@@ -53,36 +41,14 @@
 (defmethod ig/halt-key! :anketeurweb/nrepl [_ nrepl]
     (repl/stop nrepl))
 
-#_
-(mount/defstate ^{:on-reload :noop}
-                repl-server
-                :start
-                (when-let [nrepl-port (env :nrepl-port)]
-                  (repl/start {:port nrepl-port}))
-                :stop
-                (when repl-server
-                  (repl/stop repl-server)))
-
-
 (defn stop-app [system]
   (ig/halt! system) 
-  #_
-  (doseq [component (:stopped (mount/stop))]
-    (log/info component "stopped"))
   (shutdown-agents))
 
 (defn start-app [args]
   (let [system (ig/init (config args))] 
     (.addShutdownHook (Runtime/getRuntime) (Thread. #(stop-app system)))
-    system)
-  #_
-  (doseq [component (-> args
-                        (parse-opts cli-options)
-                        mount/start-with-args
-                        :started)]
-    (log/info component "started"))
-  #_
-  (.addShutdownHook (Runtime/getRuntime) (Thread. stop-app)))
+    system))
 
 (defn -main [& args]
   (start-app (or args {})))
