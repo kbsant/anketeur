@@ -10,7 +10,6 @@
             [muuntaja.format.json :refer [json-format]]
             [muuntaja.format.transit :as transit-format]
             [muuntaja.middleware :refer [wrap-format wrap-params]]
-            [anketeur.config :refer [env]]
             [ring.middleware.flash :refer [wrap-flash]]
             [immutant.web.middleware :refer [wrap-session]]
             [ring.middleware.defaults :refer [site-defaults wrap-defaults]])
@@ -27,9 +26,7 @@
                 (try (.getContextPath ^ServletContext context)
                      (catch IllegalArgumentException _ context))
                 ;; if the context is not specified in the request
-                ;; we check if one has been specified in the environment
-                ;; instead
-                (:app-context env))]
+                (:app-context {}))]
       (handler request))))
 
 (defn wrap-internal-error [handler]
