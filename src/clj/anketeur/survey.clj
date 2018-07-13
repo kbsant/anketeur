@@ -96,7 +96,7 @@
   ;; consider using git as a backend for the doc data.
   ;; queue up and save intermittently if autosave.
   ;; attempt to flush if saved explicitly.
-  (let [upserted-survey-info (upsert-survey survey-info)]
+  (let [upserted-survey-info (upsert-survey survey-table survey-info)]
     (flush-table survey-table)
     upserted-survey-info))
 
