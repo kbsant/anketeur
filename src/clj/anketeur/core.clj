@@ -1,42 +1,16 @@
 (ns anketeur.core
-  (:require [anketeur.handler :as handler]
-            [luminus.repl-server :as repl]
-            [luminus.http-server :as http]
-            [anketeur.config]
+  (:require [anketeur.httpd]
+            [anketeur.config :as config]
             [anketeur.survey]
-            [clojure.tools.cli :refer [parse-opts]]
+            [clojure.tools.cli :as cli]
             [clojure.tools.logging :as log]
             [integrant.core :as ig])
   (:gen-class))
 
-(defn config [options]
-  {:anketeurweb/env {:options options}
-   :anketeurweb/ds {:env (ig/ref :anketeurweb/env)}
-   :anketeurweb/httpd {:env (ig/ref :anketeurweb/env)
-                       :ds (ig/ref :anketeurweb/ds)}
-   #_ #_ :anketeurweb/nrepl {:env (ig/ref :anketeurweb/env)}})
-
 (def cli-options
+  "The command line option config, used by parse-opts."
   [["-p" "--port PORT" "Port number"
     :parse-fn #(Integer/parseInt %)]])
-
-(defmethod ig/init-key :anketeurweb/httpd [_ {:keys [env ds]}]
-  (http/start
-    (-> env
-        (assoc :handler (handler/app env ds))
-        (update :io-threads #(or % (* 2 (.availableProcessors (Runtime/getRuntime)))))
-        (update :port #(or (-> env :options :port) %)))))
-
-(defmethod ig/halt-key! :anketeurweb/httpd [_ httpd]
-  (http/stop httpd))
-
-#_
-(defmethod ig/init-key :anketeurweb/nrepl [_ {:keys [env]}]
-  (when-let [nrepl-port (env :nrepl-port)]
-    (repl/start {:port nrepl-port})))
-#_
-(defmethod ig/halt-key! :anketeurweb/nrepl [_ nrepl]
-    (repl/stop nrepl))
 
 (defn stop-app [system]
   (ig/halt! system 
@@ -44,11 +18,11 @@
   (shutdown-agents))
 
 (defn start-app [options]
-  (let [system (ig/init (config options))] 
+  (let [system (ig/init (config/configure options))] 
     (.addShutdownHook (Runtime/getRuntime) (Thread. #(stop-app system)))
     (log/info "Started components:" (keys system))
     system))
 
 (defn -main [& args]
-  (start-app (or (parse-opts args cli-options) {})))
+  (start-app (or (cli/parse-opts args cli-options) {})))
 
