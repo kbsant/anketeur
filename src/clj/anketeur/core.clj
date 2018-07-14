@@ -9,8 +9,8 @@
             [integrant.core :as ig])
   (:gen-class))
 
-(defn config [args]
-  {:anketeurweb/env {:args args}
+(defn config [options]
+  {:anketeurweb/env {:options options}
    :anketeurweb/ds {:env (ig/ref :anketeurweb/env)}
    :anketeurweb/httpd {:env (ig/ref :anketeurweb/env)
                        :ds (ig/ref :anketeurweb/ds)}
@@ -39,14 +39,16 @@
     (repl/stop nrepl))
 
 (defn stop-app [system]
-  (ig/halt! system) 
+  (ig/halt! system 
+    (log/info "Stopped components:" (keys system)))
   (shutdown-agents))
 
-(defn start-app [args]
-  (let [system (ig/init (config args))] 
+(defn start-app [options]
+  (let [system (ig/init (config options))] 
     (.addShutdownHook (Runtime/getRuntime) (Thread. #(stop-app system)))
+    (log/info "Started components:" (keys system))
     system))
 
 (defn -main [& args]
-  (start-app (or args {})))
+  (start-app (or (parse-opts args cli-options) {})))
 

@@ -3,15 +3,10 @@
             [cprop.source :as source]
             [integrant.core :as ig]))
 
-(defmethod ig/init-key :anketeurweb/env [_ {:keys [args]}]
+(defmethod ig/init-key :anketeurweb/env [_ {:keys [options]}]
   (load-config
      :merge
-     [args
+     [options
       (source/from-system-props)
       (source/from-env)]))
-#_
-(defstate env :start (load-config
-                       :merge
-                       [(args)
-                        (source/from-system-props)
-                        (source/from-env)]))
+
