@@ -5,10 +5,10 @@
             [compojure.route :as route]
             [anketeur.middleware :as middleware]))
 
-(defn app [env survey-table answer-table]
+(defn app [env ds]
   (middleware/wrap-base
     (routes
-      (-> (home-routes env survey-table answer-table)
+      (-> (home-routes env ds)
           (wrap-routes middleware/wrap-csrf)
           (wrap-routes middleware/wrap-formats))
       (route/not-found

@@ -52,34 +52,27 @@
         (swap! (:data table) assoc surveyno survey-info))))
   table)
 
-;; Holder of state for store
-(defmethod ig/init-key :anketeurweb/survey-table [_ {:keys [env]}]
-  (init-demo-survey! env (read-app-table env "survey-table")))
-
-(defmethod ig/halt-key! :anketeurweb/survey-table [_ table]
-  (flush-table table))
-
 ;; use a function because partial needs the table to be mounted first
-(defn read-doc [survey-table surveyno]
+(defn read-doc [{:keys [survey-table]} surveyno]
   (read-table-entry survey-table surveyno))
 
 ;; get a collection of docs
 ;; TODO add query param filter
-(defn query-docs [survey-table filter-fn]
+(defn query-docs [{:keys [survey-table]} filter-fn]
   (->> (view survey-table)
        vals
        (filter filter-fn)
        (into [])))
 
 ;; TODO caller should check if survey-info is nil, then retry
-(defn insert-survey [survey-table surveyname roles]
+(defn insert-survey! [{:keys [survey-table]} surveyname roles]
   (let [surveyno (java.util.UUID/randomUUID)
         survey-info {:surveyname surveyname :surveyno surveyno :roles roles}]
     (swap! (:data survey-table) assoc surveyno survey-info)
     (when (= surveyno (:surveyno survey-info))
       survey-info)))
 
-(defn upsert-survey [survey-table survey-info]
+(defn upsert-survey! [{:keys [survey-table]} survey-info]
   (let [surveyno (or (-> survey-info :surveyno as-id) (java.util.UUID/randomUUID))
         uuid-survey-info (assoc survey-info :surveyno surveyno)]
     (swap! (:data survey-table) assoc surveyno uuid-survey-info)
@@ -87,32 +80,26 @@
       uuid-survey-info)))
 
 ;; save a survey doc
-(defn save-survey! [survey-table survey-info]
+(defn save-survey! [{:keys [survey-table] :as ds} survey-info]
   ;; consider using git as a backend for the doc data.
   ;; queue up and save intermittently if autosave.
   ;; attempt to flush if saved explicitly.
-  (let [upserted-survey-info (upsert-survey survey-table survey-info)]
+  (let [upserted-survey-info (upsert-survey! ds survey-info)]
     (flush-table survey-table)
     upserted-survey-info))
 
-(defn update-in-survey! [survey-table [surveyno & _ :as keyvec] update-fn]
+(defn update-in-survey! [{:keys [survey-table]} [surveyno & _ :as keyvec] update-fn]
   (let [uuid (as-id surveyno)]
     (when (get (view survey-table) uuid)
       (swap! (:data survey-table) update-in keyvec update-fn)
       (flush-table survey-table)
       (get (view survey-table) uuid))))
 
-(defmethod ig/init-key :anketeurweb/answer-table [_ {:keys [env]}]
-  (read-app-table env "answer-table"))
-
-(defmethod ig/halt-key! :anketeurweb/answer-table [_ table]
-  (flush-table table))
-
 ;; use a function because partial needs the table to be mounted first
-(defn read-answers [answer-table surveyno]
+(defn read-answers [{:keys [answer-table]} surveyno]
   (read-table-entry answer-table surveyno))
 
-(defn read-answer-form [answer-table surveyno formno]
+(defn read-answer-form [{:keys [answer-table]} surveyno formno]
   (-> (read-table-entry answer-table surveyno)
       (get formno)))
 
@@ -125,34 +112,38 @@
          counter (get-in result keyvec)]
       (counter-str counter))))
 
-(defn update-answers! [table surveyno {:keys [formno] :as answers}]
-  (let [upsert-formno (next-answer-counter! table surveyno formno)
+(defn update-answers! [{:keys [answer-table]} surveyno {:keys [formno] :as answers}]
+  (let [upsert-formno (next-answer-counter! answer-table surveyno formno)
         answers-with-formno (assoc answers :formno upsert-formno)]
     (when upsert-formno
-      (swap! (:data table) assoc-in [surveyno upsert-formno] answers-with-formno)
+      (swap! (:data answer-table) assoc-in [surveyno upsert-formno] answers-with-formno)
       upsert-formno)))
 
 ;; TODO decide where to queue write operations
-(defn save-answers! [answer-table surveyno {:keys [answers]}]
+(defn save-answers! [{:keys [answer-table] :as ds} surveyno {:keys [answers]}]
   (when surveyno
-    (let [formno (update-answers! answer-table (as-id surveyno) answers)]
+    (let [formno (update-answers! ds (as-id surveyno) answers)]
       (flush-table answer-table)
       formno)))
 
-(defmethod ig/init-key :anketeurweb/auth-table [_ {:keys [env]}]
-  (read-app-table env "auth-table"))
-
-(defmethod ig/halt-key! :anketeurweb/auth-table [_ table]
-  (flush-table table))
-
-(defn insert-auth [auth-table surveyname surveyno passwd]
+(defn insert-auth [{:keys [auth-table]} surveyname surveyno passwd]
   (when surveyno
     (let [hashkey (password/encrypt passwd)
           auth-info {:surveyname surveyname :surveyno surveyno :hashkey hashkey}]
       (swap! (:data auth-table) assoc surveyname auth-info)
       auth-info)))
 
-(defn auth-survey [survey-table {:keys [surveyno hashkey] :as survey-info} password]
+(defn auth-survey
+  [{:keys [survey-table]} {:keys [surveyno hashkey] :as survey-info} password]
   (when (and surveyno (password/check password hashkey))
     (get (view survey-table) surveyno)))
+
+;; Holder of state for store
+(defmethod ig/init-key :anketeurweb/ds [_ {:keys [env]}]
+  {:survey-table (init-demo-survey! env (read-app-table env "survey-table"))
+   :answer-table (read-app-table env "answer-table")
+   :auth-table (read-app-table env "auth-table")})
+
+(defmethod ig/halt-key! :anketeurweb/ds [_ ds]
+  (run! flush-table (vals ds)))
 

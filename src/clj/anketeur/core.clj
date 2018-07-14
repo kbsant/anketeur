@@ -11,22 +11,19 @@
 
 (defn config [args]
   {:anketeurweb/env {:args args}
-   :anketeurweb/survey-table {:env (ig/ref :anketeurweb/env)}
-   :anketeurweb/answer-table {:env (ig/ref :anketeurweb/env)}
-   :anketeurweb/auth-table {:env (ig/ref :anketeurweb/env)}
+   :anketeurweb/ds {:env (ig/ref :anketeurweb/env)}
    :anketeurweb/httpd {:env (ig/ref :anketeurweb/env)
-                       :survey-table (ig/ref :anketeurweb/survey-table)
-                       :answer-table (ig/ref :anketeurweb/answer-table)}
+                       :ds (ig/ref :anketeurweb/ds)}
    #_ #_ :anketeurweb/nrepl {:env (ig/ref :anketeurweb/env)}})
 
 (def cli-options
   [["-p" "--port PORT" "Port number"
     :parse-fn #(Integer/parseInt %)]])
 
-(defmethod ig/init-key :anketeurweb/httpd [_ {:keys [env survey-table answer-table]}]
+(defmethod ig/init-key :anketeurweb/httpd [_ {:keys [env ds]}]
   (http/start
     (-> env
-        (assoc :handler (handler/app env survey-table answer-table))
+        (assoc :handler (handler/app env ds))
         (update :io-threads #(or % (* 2 (.availableProcessors (Runtime/getRuntime)))))
         (update :port #(or (-> env :options :port) %)))))
 
