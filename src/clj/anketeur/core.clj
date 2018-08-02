@@ -12,15 +12,22 @@
   [["-p" "--port PORT" "Port number"
     :parse-fn #(Integer/parseInt %)]])
 
+(defn stop-deps [system]
+  (ig/halt! system)
+  (log/info "Stopped components:" (keys system)))
+
+(defn start-deps [options]
+  (let [system (ig/init (config/configure options))]
+    (log/info "Started components:" (keys system))
+    system))
+
 (defn stop-app [system]
-  (ig/halt! system 
-    (log/info "Stopped components:" (keys system)))
+  (stop-deps system)
   (shutdown-agents))
 
 (defn start-app [options]
-  (let [system (ig/init (config/configure options))] 
+  (let [system (start-deps options)]
     (.addShutdownHook (Runtime/getRuntime) (Thread. #(stop-app system)))
-    (log/info "Started components:" (keys system))
     system))
 
 (defn -main [& args]
