@@ -4,7 +4,7 @@
     [anketeur.controller.answer :as answer]
     [anketeur.controller.result :as result]
     [anketeur.controller.main :as main]
-    [anketeur.middleware :as middleware]))
+    [ashikasoft.webstack.middleware :as middleware]))
 
 (defn- applyfn
   "A short form of (fn [_]( ... )).

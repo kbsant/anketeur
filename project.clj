@@ -4,6 +4,7 @@
   :url "http://www.ashikasoft.com"
 
   :dependencies [[ashikasoft/webstack "0.1.0-SNAPSHOT"]
+                 [org.clojure/clojure "1.9.0"]
                  [org.clojure/clojurescript "1.10.339" :scope "provided"]
                  [reagent "0.8.1"]]
 

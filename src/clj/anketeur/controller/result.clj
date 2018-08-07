@@ -1,7 +1,7 @@
 (ns anketeur.controller.result
   (:require
     [clojure.tools.logging :as log]
-    [anketeur.layout :as layout]
+    [ashikasoft.webstack.layout :as layout]
     [anketeur.model :as model]
     [anketeur.survey :as survey]
     [anketeur.util.core :as util]
