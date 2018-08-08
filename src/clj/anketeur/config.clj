@@ -1,6 +1,10 @@
 (ns anketeur.config
-  (:require [cprop.core :as cprop]
+  (:require [anketeur.handler]
+            [anketeur.survey]
+            [ashikasoft.webstack.httpd]
+            [cprop.core :as cprop]
             [cprop.source :as source]
+            [clojure.tools.logging :as log]
             [integrant.core :as ig]))
 
 (defn configure [options]
@@ -19,4 +23,13 @@
      [options
       (source/from-system-props)
       (source/from-env)]))
+
+(defn stop-deps [system]
+  (ig/halt! system)
+  (log/info "Stopped components:" (keys system)))
+
+(defn start-deps [options]
+  (let [system (ig/init (configure options))]
+    (log/info "Started components:" (keys system))
+    system))
 

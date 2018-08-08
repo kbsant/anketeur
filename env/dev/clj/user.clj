@@ -1,17 +1,17 @@
 (ns user
   (:require
      [anketeur.figwheel :refer [start-fw stop-fw cljs]]
-     [anketeur.core :as core]))
+     [anketeur.config :as config]))
 
 (def repl-state (atom nil))
 
 (defn start []
-  (when-let [ctx (core/start-deps {})]
+  (when-let [ctx (config/start-deps {})]
     (reset! repl-state ctx)))
 
 (defn stop []
   (when-let [ctx @repl-state]
-    (core/stop-deps ctx)
+    (config/stop-deps ctx)
     (reset! repl-state nil)))
 
 (defn restart []
