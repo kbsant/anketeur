@@ -1,16 +1,13 @@
 (ns anketeur.core
-  (:require [anketeur.httpd]
-            [anketeur.config :as config]
+  (:require [anketeur.config :as config]
+            [anketeur.handler]
             [anketeur.survey]
+            [ashikasoft.webstack.core :as webstack]
+            [ashikasoft.webstack.httpd]
             [clojure.tools.cli :as cli]
             [clojure.tools.logging :as log]
             [integrant.core :as ig])
   (:gen-class))
-
-(def cli-options
-  "The command line option config, used by parse-opts."
-  [["-p" "--port PORT" "Port number"
-    :parse-fn #(Integer/parseInt %)]])
 
 (defn stop-deps [system]
   (ig/halt! system)
@@ -31,5 +28,5 @@
     system))
 
 (defn -main [& args]
-  (start-app (or (cli/parse-opts args cli-options) {})))
+  (start-app (webstack/cli-options args)))
 
