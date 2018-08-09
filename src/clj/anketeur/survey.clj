@@ -1,6 +1,6 @@
 (ns anketeur.survey
   (:require
-    [anketeur.filestore :as fs]
+    [ashikasoft.filestore.core :as fs]
     [clojure.string :as str]
     [anketeur.util.core :as util]
     [crypto.password.bcrypt :as password]
@@ -23,13 +23,13 @@
    (format "%s%03d" (str-timestamp) counter))
 
 (defn read-app-table [env table-name]
-  (fs/read-table (:app-data-dir env) table-name))
+  (fs/init-table! (:app-data-dir env) table-name))
 
 (defn view [table]
-  (some-> table :data deref))
+  (fs/view table))
 
 (defn flush-table [table]
-  (fs/write-table table))
+  (fs/write-table! table))
 
 ;; TODO try-catch and return nil in case of invalid string
 (defn as-id [s]
