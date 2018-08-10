@@ -23,13 +23,13 @@
    (format "%s%03d" (str-timestamp) counter))
 
 (defn read-app-table [env table-name]
-  (fs/init-table! (:app-data-dir env) table-name))
+  (fs/init-store! (:app-data-dir env) table-name))
 
 (defn view [table]
   (fs/view table))
 
 (defn flush-table [table]
-  (fs/write-table! table))
+  (fs/write-store! table))
 
 ;; TODO try-catch and return nil in case of invalid string
 (defn as-id [s]
@@ -49,7 +49,7 @@
       (empty? (keys (view table))))
     (let [{:keys [surveyno] :as survey-info} (util/resource-edn "edn/sample-survey.edn")]
       (when surveyno
-        (swap! (:data table) assoc surveyno survey-info))))
+        (swap! (fs/data table) assoc surveyno survey-info))))
   table)
 
 ;; use a function because partial needs the table to be mounted first
@@ -68,14 +68,14 @@
 (defn insert-survey! [{:keys [survey-table]} surveyname roles]
   (let [surveyno (java.util.UUID/randomUUID)
         survey-info {:surveyname surveyname :surveyno surveyno :roles roles}]
-    (swap! (:data survey-table) assoc surveyno survey-info)
+    (swap! (fs/data survey-table) assoc surveyno survey-info)
     (when (= surveyno (:surveyno survey-info))
       survey-info)))
 
 (defn upsert-survey! [{:keys [survey-table]} survey-info]
   (let [surveyno (or (-> survey-info :surveyno as-id) (java.util.UUID/randomUUID))
         uuid-survey-info (assoc survey-info :surveyno surveyno)]
-    (swap! (:data survey-table) assoc surveyno uuid-survey-info)
+    (swap! (fs/data survey-table) assoc surveyno uuid-survey-info)
     (when (= surveyno (:surveyno uuid-survey-info))
       uuid-survey-info)))
 
@@ -91,7 +91,7 @@
 (defn update-in-survey! [{:keys [survey-table]} [surveyno & _ :as keyvec] update-fn]
   (let [uuid (as-id surveyno)]
     (when (get (view survey-table) uuid)
-      (swap! (:data survey-table) update-in keyvec update-fn)
+      (swap! (fs/data survey-table) update-in keyvec update-fn)
       (flush-table survey-table)
       (get (view survey-table) uuid))))
 
@@ -108,7 +108,7 @@
    (or formno (next-answer-counter! table surveyno)))
   ([table surveyno]
    (let [keyvec [:form-counter surveyno]
-         result (swap! (:data table) update-in keyvec next-counter)
+         result (swap! (fs/data table) update-in keyvec next-counter)
          counter (get-in result keyvec)]
       (counter-str counter))))
 
@@ -116,7 +116,7 @@
   (let [upsert-formno (next-answer-counter! answer-table surveyno formno)
         answers-with-formno (assoc answers :formno upsert-formno)]
     (when upsert-formno
-      (swap! (:data answer-table) assoc-in [surveyno upsert-formno] answers-with-formno)
+      (swap! (fs/data answer-table) assoc-in [surveyno upsert-formno] answers-with-formno)
       upsert-formno)))
 
 ;; TODO decide where to queue write operations
@@ -130,7 +130,7 @@
   (when surveyno
     (let [hashkey (password/encrypt passwd)
           auth-info {:surveyname surveyname :surveyno surveyno :hashkey hashkey}]
-      (swap! (:data auth-table) assoc surveyname auth-info)
+      (swap! (fs/data auth-table) assoc surveyname auth-info)
       auth-info)))
 
 (defn auth-survey
