@@ -3,7 +3,6 @@
     [ashikasoft.filestore.core :as fs]
     [clojure.string :as str]
     [anketeur.util.core :as util]
-    [crypto.password.bcrypt :as password]
     [clj-time.format :as fmt]
     [clj-time.core :as tm]
     [integrant.core :as ig]))
@@ -126,23 +125,10 @@
       (flush-table answer-table)
       formno)))
 
-(defn insert-auth [{:keys [auth-table]} surveyname surveyno passwd]
-  (when surveyno
-    (let [hashkey (password/encrypt passwd)
-          auth-info {:surveyname surveyname :surveyno surveyno :hashkey hashkey}]
-      (swap! (fs/data auth-table) assoc surveyname auth-info)
-      auth-info)))
-
-(defn auth-survey
-  [{:keys [survey-table]} {:keys [surveyno hashkey] :as survey-info} password]
-  (when (and surveyno (password/check password hashkey))
-    (get (view survey-table) surveyno)))
-
 ;; Holder of state for store
 (defmethod ig/init-key :anketeurweb/ds [_ {:keys [env]}]
   {:survey-table (init-demo-survey! env (read-app-table env "survey-table"))
-   :answer-table (read-app-table env "answer-table")
-   :auth-table (read-app-table env "auth-table")})
+   :answer-table (read-app-table env "answer-table")})
 
 (defmethod ig/halt-key! :anketeurweb/ds [_ ds]
   (run! flush-table (vals ds)))

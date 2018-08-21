@@ -1,6 +1,5 @@
 (ns user
   (:require
-     [anketeur.figwheel :refer [start-fw stop-fw cljs]]
      [anketeur.config :as config]))
 
 (def repl-state (atom nil))

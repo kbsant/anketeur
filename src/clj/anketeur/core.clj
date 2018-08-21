@@ -1,7 +1,6 @@
 (ns anketeur.core
   (:require [anketeur.config :as config]
-            [ashikasoft.webstack.cli :as cli]
-            [integrant.core :as ig])
+            [ashikasoft.webstack.cli :as cli])
   (:gen-class))
 
 (defn stop-app [system]
