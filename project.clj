@@ -1,4 +1,4 @@
-(defproject anketeur "0.1.0-SNAPSHOT"
+(defproject anketeur "0.1.0"
 
   :description "A simple app for conducting surveys"
   :url "http://www.ashikasoft.com"
