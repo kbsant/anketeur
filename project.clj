@@ -3,8 +3,8 @@
   :description "A simple app for conducting surveys"
   :url "http://www.ashikasoft.com"
 
-  :dependencies [[ashikasoft/filestore "0.1.0-SNAPSHOT"]
-                 [ashikasoft/webstack "0.1.0-SNAPSHOT"]
+  :dependencies [[ashikasoft/filestore "0.1.0"]
+                 [ashikasoft/webstack "0.1.0"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/clojurescript "1.10.439" :scope "provided"]]
 
