@@ -3,7 +3,7 @@
   <groupId>anketeur</groupId>
   <artifactId>anketeur</artifactId>
   <packaging>jar</packaging>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.1.0</version>
   <name>anketeur</name>
   <description>A simple app for conducting surveys</description>
   <url>http://www.ashikasoft.com</url>
@@ -11,7 +11,7 @@
     <url>https://github.com/kbsant/anketeur</url>
     <connection>scm:git:git://github.com/kbsant/anketeur.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/kbsant/anketeur.git</developerConnection>
-    <tag>0446d329589b7d3f81d6c4dcaa2dba92d18912ee</tag>
+    <tag>2485bed2623f7aa843a3b42674cee62f8860c17f</tag>
   </scm>
   <build>
     <sourceDirectory>src/clj</sourceDirectory>
@@ -92,12 +92,12 @@
     <dependency>
       <groupId>ashikasoft</groupId>
       <artifactId>filestore</artifactId>
-      <version>0.1.0-SNAPSHOT</version>
+      <version>0.1.0</version>
     </dependency>
     <dependency>
       <groupId>ashikasoft</groupId>
       <artifactId>webstack</artifactId>
-      <version>0.1.0-SNAPSHOT</version>
+      <version>0.1.0</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
