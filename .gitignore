@@ -5,6 +5,7 @@
 *.jar
 *.swp
 *.class
+*.log
 /.lein-*
 profiles.clj
 /.env
