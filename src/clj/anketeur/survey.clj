@@ -21,7 +21,9 @@
 (defn counter-str [counter]
    (format "%s%03d" (str-timestamp) counter))
 
-(defn read-app-table [env table-name]
+(defn read-app-table
+  "Using the APP_DATA_DIR environment variable as a base path, create or read the application data tables."
+  [env table-name]
   (fs/init-store! (:app-data-dir env) table-name))
 
 (defn view [table]
