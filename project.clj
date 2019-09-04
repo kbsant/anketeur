@@ -3,10 +3,10 @@
   :description "A simple app for conducting surveys"
   :url "http://www.ashikasoft.com"
 
-  :dependencies [[ashikasoft/filestore "0.1.0"]
-                 [ashikasoft/webstack "0.1.0"]
-                 [org.clojure/clojure "1.10.0"]
-                 [org.clojure/clojurescript "1.10.439" :scope "provided"]]
+  :dependencies [[ashikasoft/filestore "0.1.1-SNAPSHOT"]
+                 [ashikasoft/webstack "0.1.1-SNAPSHOT"]
+                 [org.clojure/clojure "1.10.1"]
+                 [org.clojure/clojurescript "1.10.520" :scope "provided"]]
 
   :min-lein-version "2.0.0"
   
@@ -17,7 +17,6 @@
   :main ^:skip-aot anketeur.core
 
   :plugins [[lein-cljsbuild "1.1.7"]
-            [lein-ancient "0.6.15"]
             [lein-immutant "2.1.0"]]
   :clean-targets ^{:protect false}
   [:target-path [:cljsbuild :builds :app :compiler :output-dir] [:cljsbuild :builds :app :compiler :output-to]]
@@ -57,15 +56,15 @@
    :project/dev  {:jvm-opts ["-Dconf=dev-config.edn"]
                   :dependencies [[binaryage/devtools "0.9.10"]
                                  [com.cemerick/piggieback "0.2.2"]
-                                 [doo "0.1.10"]
-                                 [expound "0.7.1"]
-                                 [figwheel-sidecar "0.5.16"]
-                                 [pjstadig/humane-test-output "0.8.3"]
+                                 [doo "0.1.11"]
+                                 [expound "0.7.2"]
+                                 [figwheel-sidecar "0.5.19"]
+                                 [pjstadig/humane-test-output "0.9.0"]
                                  [prone "1.6.0"]
-                                 [ring/ring-devel "1.6.3"]
-                                 [ring/ring-mock "0.3.2"]]
+                                 [ring/ring-devel "1.7.1"]
+                                 [ring/ring-mock "0.4.0"]]
                   :plugins      [[com.jakemccrary/lein-test-refresh "0.23.0"]
-                                 [lein-doo "0.1.10"]
+                                 [lein-doo "0.1.11"]
                                  [lein-figwheel "0.5.16"]]
                   :cljsbuild
                   {:builds

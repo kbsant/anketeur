@@ -62,9 +62,13 @@ Create an uberjar with
 
     lein uberjar
 
-Set the `APP_DATA_DIR` environment variable to the data path, and run the jar file with
+Set the `APP_DATA_DIR` environment variable to the data path,
 
-    APP_DATA_DIR=/path/to/data ; java -jar anketeur.jar
+    export APP_DATA_DIR=/path/to/data 
+
+and run the jar file with
+
+    java -jar anketeur.jar
 
 ## Acknowledgments
 
