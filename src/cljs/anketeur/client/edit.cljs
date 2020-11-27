@@ -2,6 +2,7 @@
   (:require
     [clojure.string :as string]
     [reagent.core :as r]
+    [reagent.dom :as rdom]
     [anketeur.model :as model]
     [anketeur.form :as form]
     [anketeur.client.ui :as ui]
@@ -485,7 +486,7 @@
 ;; Initialize app
 
 (defn mount-components []
-  (r/render [home-page] (.getElementById js/document "app")))
+  (rdom/render [home-page] (.getElementById js/document "app")))
 
 (defn load-transit! []
   (let [init-state (ui/read-json js/transitState)

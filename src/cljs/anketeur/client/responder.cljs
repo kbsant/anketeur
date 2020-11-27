@@ -5,6 +5,7 @@
     [anketeur.form :as form]
     [anketeur.client.ui :as ui]
     [reagent.core :as r]
+    [reagent.dom :as rdom]
     [anketeur.client.ajax :as appajax]
     [ajax.core :refer [GET POST]]))
 
@@ -94,7 +95,7 @@
     [:br]])
 
 (defn mount-components []
-  (r/render [home-page] (.getElementById js/document "app")))
+  (rdom/render [home-page] (.getElementById js/document "app")))
 
 (defn load-transit! []
   (let [init-state (ui/read-json js/transitState)

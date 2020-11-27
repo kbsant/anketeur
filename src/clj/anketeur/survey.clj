@@ -3,16 +3,15 @@
     [ashikasoft.filestore.core :as fs]
     [clojure.string :as str]
     [anketeur.util.core :as util]
-    [clj-time.format :as fmt]
-    [clj-time.core :as tm]
+    [java-time :as time]
     [integrant.core :as ig]))
 
-(def timestamp-formatter (fmt/formatter "yyyyMMddHHmmssSS"))
+(def timestamp-formatter "yyyyMMddHHmmssSS")
 
 (defn str-timestamp
   "String representation of the current time"
   []
-  (fmt/unparse timestamp-formatter (tm/now)))
+  (time/format timestamp-formatter (time/zoned-date-time)))
 
 (defn next-counter [counter]
   (let [max 1000]
