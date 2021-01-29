@@ -3,10 +3,10 @@
   :description "A simple app for conducting surveys"
   :url "http://www.ashikasoft.com"
 
-  :dependencies [[ashikasoft/filestore "0.1.1-SNAPSHOT"]
-                 [ashikasoft/webstack "0.1.1-SNAPSHOT"]
+  :dependencies [[ashikasoft/filestore "0.1.2"]
+                 [ashikasoft/webstack "0.1.2"]
                  [clojure.java-time "0.3.2"]
-                 [org.clojure/clojure "1.10.1"]
+                 [org.clojure/clojure "1.10.2"]
                  [org.clojure/clojurescript "1.10.773" :scope "provided"]]
 
   :min-lein-version "2.0.0"
@@ -58,7 +58,7 @@
                   :dependencies [[binaryage/devtools "1.0.2"]
                                  [com.cemerick/piggieback "0.2.2"]
                                  [doo "0.1.11"]
-                                 [expound "0.8.6"]
+                                 [expound "0.8.7"]
                                  [figwheel-sidecar "0.5.20"]
                                  [pjstadig/humane-test-output "0.10.0"]
                                  [prone "2020-01-17"]
