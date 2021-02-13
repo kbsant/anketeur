@@ -4,7 +4,7 @@
   :url "http://www.ashikasoft.com"
 
   :dependencies [[ashikasoft/filestore "0.1.2"]
-                 [ashikasoft/webstack "0.1.2"]
+                 [ashikasoft/webstack "0.1.4"]
                  [clojure.java-time "0.3.2"]
                  [org.clojure/clojure "1.10.2"]
                  [org.clojure/clojurescript "1.10.773" :scope "provided"]]
