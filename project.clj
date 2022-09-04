@@ -7,7 +7,7 @@
                  [ashikasoft/webstack "0.1.7"]
                  [clojure.java-time "0.3.3"]
                  [org.clojure/clojure "1.11.1"]
-                 [org.clojure/clojurescript "1.11.4" :scope "provided"]]
+                 [org.clojure/clojurescript "1.11.60" :scope "provided"]]
 
   :min-lein-version "2.0.0"
   
@@ -55,7 +55,7 @@
    :test          [:project/dev :project/test :profiles/test]
 
    :project/dev  {:jvm-opts ["-Dconf=dev-config.edn"]
-                  :dependencies [[binaryage/devtools "1.0.5"]
+                  :dependencies [[binaryage/devtools "1.0.6"]
                                  [com.cemerick/piggieback "0.2.2"]
                                  [doo "0.1.11"]
                                  [expound "0.9.0"]
