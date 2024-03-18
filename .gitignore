@@ -12,3 +12,4 @@ profiles.clj
 .nrepl-port
 /log
 dev_env.sh
+pom.xml
