@@ -1,13 +1,15 @@
 (defproject anketeur "0.1.1-SNAPSHOT"
 
   :description "A simple app for conducting surveys"
-  :url "http://www.ashikasoft.com"
-
-  :dependencies [[ashikasoft/filestore "0.1.3"]
-                 [ashikasoft/webstack "0.1.7"]
-                 [clojure.java-time "0.3.3"]
-                 [org.clojure/clojure "1.11.1"]
-                 [org.clojure/clojurescript "1.11.60" :scope "provided"]]
+  :url "http://www.anketeur.com"
+  :license {:name "MIT License"
+            :url "https://opensource.org/licenses/MIT"}
+  :dependencies [[ashikasoft/filestore "0.1.4"]
+                 [ashikasoft/webstack "0.1.8"]
+                 [clojure.java-time "1.4.2"]
+                 [org.clojure/clojure "1.11.2"]
+                 [org.clojure/clojurescript "1.11.132" :scope "provided"]
+                 [org.slf4j/slf4j-simple "2.0.12"]]
 
   :min-lein-version "2.0.0"
   
@@ -55,14 +57,14 @@
    :test          [:project/dev :project/test :profiles/test]
 
    :project/dev  {:jvm-opts ["-Dconf=dev-config.edn"]
-                  :dependencies [[binaryage/devtools "1.0.6"]
+                  :dependencies [[binaryage/devtools "1.0.7"]
                                  [com.cemerick/piggieback "0.2.2"]
                                  [doo "0.1.11"]
                                  [expound "0.9.0"]
                                  [figwheel-sidecar "0.5.20"]
                                  [pjstadig/humane-test-output "0.11.0"]
                                  [prone "2021-04-23"]
-                                 [ring/ring-devel "1.9.5"]
+                                 [ring/ring-devel "1.12.0"]
                                  [ring/ring-mock "0.4.0"]]
                   :plugins      [[com.jakemccrary/lein-test-refresh "0.23.0"]
                                  [lein-doo "0.1.11"]

@@ -7,7 +7,7 @@ Anketeur is a small, flexible web app for conducting surveys.
 ## Status
 
 Prototype available (stage 1 on the roadmap below).
-A demo is accessible online at: http://anketeur.herokuapp.com/ (runs on a limited dyno which may take a while to spin up)
+Currently looking for a site to host an online demo -- needs java runtime.
 
 ## Roadmap
 
@@ -66,9 +66,9 @@ Set the `APP_DATA_DIR` environment variable to the data path,
 
     export APP_DATA_DIR=/path/to/data 
 
-and run the jar file with
+and run the jar file with the port number:
 
-    java -jar anketeur.jar
+    java -jar anketeur.jar -p 8000
 
 ## Acknowledgments
 
